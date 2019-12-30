@@ -168,7 +168,7 @@ def main():
 
         # Parse and fill args
         args = parser.parse_args()
-        scipionHome = args.path
+        scipionHome = os.path.abspath(args.path)
         conda = args.conda
          # Warn about conda fonts...
         if conda and askForInput("Conda installations will have a poor font and may"

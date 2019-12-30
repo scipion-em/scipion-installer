@@ -8,6 +8,7 @@ from os.path import dirname, abspath, join
 
 # Set SCIPION_HOME to the location of this file
 scipionHome = os.environ.get("SCIPION_HOME", dirname(abspath(__file__)))
+os.environ["PW_ALT_TESTS_CMD"] = basename(__file__) + " tests"
 
 cmd = ""
 # Activate the environment if not active
