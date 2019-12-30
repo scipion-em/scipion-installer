@@ -13,6 +13,7 @@ version 3 (GPLv3).
 Usage
 =====
     pip install scipion-installer
+
     installscipion <path where you want scipion> -dev -dry
 
     remove -dry, once you understand what it will do.
