@@ -28,8 +28,8 @@ with open('requirements.txt') as f:
 
 setup(
     name='scipion-installer',  # Required
-    version='0.3.a',  # Required
-    description='Installs scipion 3 creating a virtual environment fot it',  # Required
+    version='0.4.a',  # Required
+    description='Installs scipion 3 creating a virtual environment for it, for now only for developers.',  # Required
     long_description=long_description,  # Optional
     url='https://github.com/scipion-em/scipion-installer',  # Optional
     author='I2PC, Pablo Conesa',  # Optional
