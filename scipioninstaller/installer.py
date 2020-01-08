@@ -7,7 +7,6 @@ from scipioninstaller import INSTALL_ENTRY
 from scipioninstaller.launchers import LAUNCHER_TEMPLATE, VIRTUAL_ENV_VAR, ACTIVATE_ENV_CMD
 
 CMD_SEP = " &&\n"
-VIRTUALENV = 'virtualenv'
 CONDA = 'conda'
 SCIPION_ENV = 'scipion3env'
 GIT = 'git'
@@ -63,10 +62,8 @@ def cmdfy(cmd, sep=CMD_SEP):
 
 def getVirtualenvCmd(scipionHome):
 
-    checkProgram(VIRTUALENV)
-
     cmd = cmdfy("cd %s" % scipionHome)
-    cmd += cmdfy("%s --python=python3 %s" % (VIRTUALENV, SCIPION_ENV))
+    cmd += cmdfy("python -m virtualenv --python=python3 %s" % SCIPION_ENV)
     cmd += cmdfy(getVirtualenvActivationCmd(scipionHome))
     return cmd
 
