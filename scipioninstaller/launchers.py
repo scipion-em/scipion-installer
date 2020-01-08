@@ -4,7 +4,7 @@ LAUNCHER_TEMPLATE='''#!/usr/bin/env python
 # Scipion launcher
 import os
 import sys
-from os.path import dirname, abspath, join
+from os.path import dirname, abspath, join, basename
 
 # Set SCIPION_HOME to the location of this file
 scipionHome = os.environ.get("SCIPION_HOME", dirname(abspath(__file__)))
