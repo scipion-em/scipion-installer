@@ -173,6 +173,14 @@ def main():
             raise InstallationError("Cancelling installation with conda.")
 
         dev = args.dev
+        # Remove this when releasing scipion3 on pypi.
+        dev = True
+        if askForInput("This is an early version of the installer. "
+                       "So far only works for developers installing an unstable version."
+                       "Are you sure you want to continue? (%s/%s): " % (
+                                 YES, NO)) != YES:
+            raise InstallationError("User cancelled development/unstable installation.")
+
         dry = args.dry
         checkProgram(GIT) if dev else None
 
