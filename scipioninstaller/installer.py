@@ -8,7 +8,7 @@ from scipioninstaller.launchers import LAUNCHER_TEMPLATE, VIRTUAL_ENV_VAR, ACTIV
 
 CMD_SEP = " &&\n"
 CONDA = 'conda'
-SCIPION_ENV = 'scipion3env'
+SCIPION_ENV = '.scipion3env'
 GIT = 'git'
 LAUNCHER_NAME = "scipion3"
 
@@ -26,6 +26,7 @@ except:
 
 
 def askForInput(message):
+    
     return ask(message)
 
 
@@ -81,7 +82,7 @@ def checkProgram(program):
         raise InstallationError("%s command not found." % program)
 
 
-def solveScipionHome(scipionHome):
+def solveScipionHome(scipionHome, dry):
     # Check folder exists
     if not os.path.exists(scipionHome):
 
@@ -91,15 +92,25 @@ def solveScipionHome(scipionHome):
             raise InstallationError("Cannot continue without creating %s" % scipionHome)
         else:
             try:
-                os.mkdir(scipionHome)
+                if not dry:
+                    os.mkdir(scipionHome)
+                else:
+                    print ("%s would have been created." % scipionHome)
             except OSError as e:
                 print (e)
                 raise InstallationError("Please, verify that you have permissions to create %s" % scipionHome)
 
 
-def getRepoInstallCommand(scipionHome, repoName):
+def getRepoInstallCommand(scipionHome, repoName, useHttps):
+    
+    # Choose url type: ssh or https
+    cloneUrl= 'git@github.com:scipion-em/%s.git' if not useHttps else 'https://github.com/scipion-em/%s.git'
+
+    # replace the repository name
+    cloneUrl = cloneUrl % repoName
+    
     if not os.path.exists(os.path.join(scipionHome, repoName)):
-        cmd = cmdfy("git clone --branch devel git@github.com:scipion-em/%s.git" % repoName)
+        cmd = cmdfy("git clone --branch devel %s" % cloneUrl)
     else:
         cmd = ""
         print("Print %s repository detected, skipping clone." % repoName)
@@ -108,12 +119,12 @@ def getRepoInstallCommand(scipionHome, repoName):
     return cmd
 
 
-def getInstallationCmd(scipionHome, dev):
+def getInstallationCmd(scipionHome, dev, useHttps):
     if dev:
         cmd = cmdfy("cd %s" % scipionHome)
-        cmd += getRepoInstallCommand(scipionHome, "scipion-pyworkflow")
-        cmd += getRepoInstallCommand(scipionHome, "scipion-em")
-        cmd += getRepoInstallCommand(scipionHome, "scipion-app")
+        cmd += getRepoInstallCommand(scipionHome, "scipion-pyworkflow", useHttps)
+        cmd += getRepoInstallCommand(scipionHome, "scipion-em", useHttps)
+        cmd += getRepoInstallCommand(scipionHome, "scipion-app", useHttps)
 
     else:
         cmd = cmdfy("pip install scipion-app")
@@ -160,8 +171,12 @@ def main():
         parser.add_argument('-dev', help='installs components in devel mode',
                             action='store_true')
 
-        parser.add_argument('-dry', help='Just shows the commands running them.',
+        parser.add_argument('-dry', help='Just shows the commands without running them.',
                             action='store_true')
+        
+        parser.add_argument('-httpsClone', help= 'Only when -dev is active, makes git clones using https '
+                                                 'instead of ssh', action='store_true')
+        
 
         # Parse and fill args
         args = parser.parse_args()
@@ -185,9 +200,9 @@ def main():
         checkProgram(GIT) if dev else None
 
         # Check Scipion home folder and create it if apply.
-        solveScipionHome(scipionHome)
+        solveScipionHome(scipionHome, dry)
         cmd = getEnvironmentCreationCmd(conda, scipionHome)
-        cmd += getInstallationCmd(scipionHome, dev)
+        cmd += getInstallationCmd(scipionHome, dev, args.httpsClone)
         runCmd(cmd, dry)
 
         createLauncher(scipionHome, conda, dry)
@@ -211,6 +226,8 @@ def main():
     except InstallationError as e:
         print (str(e))
         print ("Installation cancelled.")
+    except KeyboardInterrupt as e:
+        print("\nInstallation cancelled, probably by pressing \"Ctrl + c\".")
 
 def runCmd(cmd, dry):
 

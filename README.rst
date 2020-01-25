@@ -14,8 +14,9 @@ Usage
 =====
     pip install scipion-installer
 
-    installscipion <path where you want scipion> -dev -dry
+    installscipion <path where you want scipion> -dev -dry [-httpsClone]
 
     remove -dry, once you understand what it will do.
 
+    pass -httpsClone only if -dev is passed to git clone development repos using https instead os ssh
 
