@@ -101,30 +101,43 @@ def solveScipionHome(scipionHome, dry):
                 raise InstallationError("Please, verify that you have permissions to create %s" % scipionHome)
 
 
-def getRepoInstallCommand(scipionHome, repoName, useHttps):
+def getRepoInstallCommand(scipionHome, repoName, useHttps, organization='scipion-em', branch='devel', pipInstall=True, cloneFolder=''):
     
     # Choose url type: ssh or https
-    cloneUrl= 'git@github.com:scipion-em/%s.git' if not useHttps else 'https://github.com/scipion-em/%s.git'
+    cloneUrl= 'git@github.com:%s/%s.git' if not useHttps else 'https://github.com/%s/%s.git'
 
     # replace the repository name
-    cloneUrl = cloneUrl % repoName
+    cloneUrl = cloneUrl % (organization, repoName)
     
-    if not os.path.exists(os.path.join(scipionHome, repoName)):
-        cmd = cmdfy("git clone --branch devel %s" % cloneUrl)
+    if not os.path.exists(os.path.join(scipionHome, repoName if cloneFolder == '' else cloneFolder)):
+        cmd = cmdfy("git clone --branch %s %s %s" % (branch, cloneUrl, cloneFolder))
     else:
         cmd = ""
         print("Print %s repository detected, skipping clone." % repoName)
 
-    cmd += cmdfy("pip install -e %s" % repoName)
+    if pipInstall:
+        cmd += cmdfy("pip install -e %s" % repoName)
+
     return cmd
 
 
 def getInstallationCmd(scipionHome, dev, useHttps):
     if dev:
         cmd = cmdfy("cd %s" % scipionHome)
+        # Scipion repos
         cmd += getRepoInstallCommand(scipionHome, "scipion-pyworkflow", useHttps)
         cmd += getRepoInstallCommand(scipionHome, "scipion-em", useHttps)
         cmd += getRepoInstallCommand(scipionHome, "scipion-app", useHttps)
+
+        #Xmipp repos
+        cmd+= getRepoInstallCommand(scipionHome, "xmipp", useHttps, organization='i2pc', branch='python3_migration'
+                                    , pipInstall=False, cloneFolder='xmipp-bundle')
+        cmd+= cmdfy("(cd xmipp-bundle && ./xmipp all br=python3_migration)")
+        cmd += cmdfy("pip install -e xmipp-bundle/src/scipion-em-xmipp")
+        cmd += cmdfy("mkdir -p software/lib")
+        cmd += cmdfy("mkdir -p software/bindings")
+        cmd += cmdfy("mkdir -p software/em")
+        cmd += cmdfy("ln -s $PWD/xmipp-bundle/build software/em/xmipp")
 
     else:
         cmd = cmdfy("pip install scipion-app")
@@ -157,6 +170,8 @@ def createLauncher(scipionHome, conda, dry):
         fh.close()
 
     runCmd("chmod +x %s" % launcherFn, dry)
+
+    return launcherFn
 
 
 def main():
@@ -205,22 +220,10 @@ def main():
         cmd += getInstallationCmd(scipionHome, dev, args.httpsClone)
         runCmd(cmd, dry)
 
-        createLauncher(scipionHome, conda, dry)
-
-        print('''
-
-                       ,(((/*                                                                                                  
-                   &&%%%#((///**,,                                                                                             
-                ,&&&%%%##((//***,,,,      %@..&@      %@(,*&@@, &@@@@. &@@@@@@@   %@@@@%     @@(#@@@    #@@@      &@@@@        
-               %%%%%%.         ,,,,,     @@    %    @@       @    @&     @%   .@@   @@     @/      ,@@     @@@      @          
-              (####   &&&&&&&&%          @@%       @@             @&     @%    @@   @@    @@        (@@   .# @@.    @          
-             //(((  %&&&&&&&&&&&&%         @@@@    @@             @&     @%   @&    @@   .@%         @@   .#   @@   @          
-             *//// .&&&&&&&&&&&&&             @@%  @@             @&     @%         @@    @@         @%   ,#    &@& @          
-             ***** .&&&&&&&&&&/          #     @%   @@       .&   @&     @%         @@    .@@       @@    /%      @@@          
-             ,,,,,  %&&&&  &&&&          @@(./@.      @@@#(&@(  #@@@@( #@@@&*     (@@@@#    *@@@(#@#    ,&@@@(     &@          
-              ,,,,,  &&&   ,&&&&                                                                                             
-               .                                                                                                                                                                                                                                                                                                                                                         
-        ''')
+        launcher = createLauncher(scipionHome, conda, dry)
+        if not dry:
+            print("\n\nScipion has been successfully installed!! Happy EM processing!!\n\n")
+            print("You can launch Scipion using the launcher at %s\n" % launcher )
 
 
     except InstallationError as e:
