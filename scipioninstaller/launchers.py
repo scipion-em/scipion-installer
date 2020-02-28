@@ -13,11 +13,16 @@ os.environ["LD_LIBRARY_PATH"] = ":".join([os.environ.get("LD_LIBRARY_PATH", ""),
 os.environ["PYTHONPATH"] = ":".join([os.environ.get("PYTHONPATH", ""), join(scipionHome, "software", "bindings")])
 
 cmd = ""
-# Activate the environment if not active
-if not os.environ.get('%(VIRTUAL_ENV_VAR)s'):
-    cmd = '%(ACTIVATE_ENV_CMD)s && '
-
-cmd += "python -m scipion %%s" %% " ".join(sys.argv[1:])
+if len(sys.argv) > 1 and sys.argv[1] == 'git':
+    for repo in ['scipion-app', 'scipion-pyworkflow', 'scipion-em']:
+        cmd += ("(cd %s ; echo ' > in %s:' ; git %s ; echo) ; "
+                % (repo, repo, ' '.join(sys.argv[2:])))
+else:
+    # Activate the environment if not active
+    if not os.environ.get('%(VIRTUAL_ENV_VAR)s'):
+        cmd = '%(ACTIVATE_ENV_CMD)s && '
+    
+    cmd += "python -m scipion %%s" %% " ".join(sys.argv[1:])
 
 # Set SCIPION_HOME
 os.environ["SCIPION_HOME"] = scipionHome

@@ -26,7 +26,7 @@ except:
 
 
 def askForInput(message):
-    
+
     return ask(message)
 
 
@@ -38,6 +38,8 @@ def getEnvironmentCreationCmd(conda, scipionHome):
         cmd = getVirtualenvCmd(scipionHome)
 
     return cmd
+
+
 class InstallationError(Exception):
     pass
 
@@ -50,16 +52,20 @@ def getCondaCmd():
     cmd += cmdfy(getCondaenvActivationCmd())
     return cmd
 
+
 def getCondaInitCmd():
     shell = os.environ.get("SHELL")
     return 'eval "$(conda shell.%s hook)"' % os.path.basename(shell)
 
+
 def getCondaenvActivationCmd():
     return "conda activate %s" % SCIPION_ENV
+
 
 def cmdfy(cmd, sep=CMD_SEP):
     """ Add a command separator like &&\n """
     return cmd + sep
+
 
 def getVirtualenvCmd(scipionHome):
 
@@ -144,9 +150,13 @@ def getInstallationCmd(scipionHome, dev, useHttps):
     return cmd
 
 
-def createLauncher(scipionHome, conda, dry):
+def createLauncher(scipionHome, conda, dry, devel=False):
 
-    content = LAUNCHER_TEMPLATE
+    if devel:
+        # TODO: Contemplate different launcher template (ex: scipion3 git [options])
+        content = LAUNCHER_TEMPLATE
+    else:
+        content = LAUNCHER_TEMPLATE
 
     if conda:
         replaceDict = {VIRTUAL_ENV_VAR: "CONDA_DEFAULT_ENV",
@@ -203,7 +213,7 @@ def main():
             raise InstallationError("Cancelling installation with conda.")
 
         dev = args.dev
-        # Remove this when releasing scipion3 on pypi.
+        # TODO: Remove this when releasing scipion3 on pypi.
         dev = True
         if askForInput("This is an early version of the installer. "
                        "So far only works for developers installing an unstable version."
@@ -220,7 +230,7 @@ def main():
         cmd += getInstallationCmd(scipionHome, dev, args.httpsClone)
         runCmd(cmd, dry)
 
-        launcher = createLauncher(scipionHome, conda, dry)
+        launcher = createLauncher(scipionHome, conda, dry, dev)
         if not dry:
             print("\n\nScipion has been successfully installed!! Happy EM processing!!\n\n")
             print("You can launch Scipion using the launcher at %s\n" % launcher )
@@ -231,6 +241,7 @@ def main():
         print ("Installation cancelled.")
     except KeyboardInterrupt as e:
         print("\nInstallation cancelled, probably by pressing \"Ctrl + c\".")
+
 
 def runCmd(cmd, dry):
 
@@ -244,6 +255,7 @@ def runCmd(cmd, dry):
         val = os.system(cmd)
         if val != 0:
             raise InstallationError("Something went wrong running: \n %s" % cmd)
+
 
 if __name__ == '__main__':
     main()
