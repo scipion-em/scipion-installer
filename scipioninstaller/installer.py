@@ -146,7 +146,8 @@ def getInstallationCmd(scipionHome, dev, useHttps):
         cmd += cmdfy("mkdir -p software/lib")
         cmd += cmdfy("mkdir -p software/bindings")
         cmd += cmdfy("mkdir -p software/em")
-        cmd += cmdfy("ln -sf $PWD/xmipp-bundle/build software/em/xmipp")
+        cmd += cmdfy("rm -rf software/em/xmipp ; "
+                     "ln -s $PWD/xmipp-bundle/build software/em/xmipp")
 
     else:
         cmd = cmdfy("pip install scipion-app")
