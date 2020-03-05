@@ -11,6 +11,7 @@ CONDA = 'conda'
 SCIPION_ENV = '.scipion3env'
 GIT = 'git'
 LAUNCHER_NAME = "scipion3"
+XMIPP_DEVEL_BRANCH = "python3_migration"
 
 # User answers
 YES = "y"
@@ -136,9 +137,11 @@ def getInstallationCmd(scipionHome, dev, useHttps):
         cmd += getRepoInstallCommand(scipionHome, "scipion-app", useHttps)
 
         #Xmipp repos
-        cmd+= getRepoInstallCommand(scipionHome, "xmipp", useHttps, organization='i2pc', branch='python3_migration'
-                                    , pipInstall=False, cloneFolder='xmipp-bundle')
-        cmd+= cmdfy("(cd xmipp-bundle && ./xmipp all br=python3_migration)")
+        cmd += cmdfy("echo '\033[1m\033[95m > Installing Xmipp-dev ...\033[0m'")
+        cmd += getRepoInstallCommand(scipionHome, "xmipp", useHttps,
+                                     organization='i2pc', branch=XMIPP_DEVEL_BRANCH,
+                                     pipInstall=False, cloneFolder='xmipp-bundle')
+        cmd += cmdfy("(cd xmipp-bundle && ./xmipp all br=%s)" % XMIPP_DEVEL_BRANCH)
         cmd += cmdfy("pip install -e xmipp-bundle/src/scipion-em-xmipp")
         cmd += cmdfy("mkdir -p software/lib")
         cmd += cmdfy("mkdir -p software/bindings")
@@ -199,8 +202,10 @@ def main():
         parser.add_argument('-dry', help='Just shows the commands without running them.',
                             action='store_true')
         
-        parser.add_argument('-httpsClone', help= 'Only when -dev is active, makes git clones using https '
-                                                 'instead of ssh', action='store_true')
+        parser.add_argument('-httpsClone', help='Only when -dev is active, '
+                                                'makes git clones using https '
+                                                'instead of ssh',
+                            action='store_true')
         
 
         # Parse and fill args
