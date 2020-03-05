@@ -15,8 +15,7 @@ os.environ["PYTHONPATH"] = ":".join([os.environ.get("PYTHONPATH", ""), join(scip
 cmd = ""
 if len(sys.argv) > 1 and sys.argv[1] == 'git':
     for repo in ['scipion-app', 'scipion-pyworkflow', 'scipion-em']:
-        cmd += ("(cd %s ; echo ' > in %s:' ; git %s ; echo) ; "
-                % (repo, repo, ' '.join(sys.argv[2:])))
+        cmd += ("(cd "+repo+" ; echo ' > in "+repo+":' ; git "+' '.join(sys.argv[2:]+" ; echo) ; ")
 else:
     # Activate the environment if not active
     if not os.environ.get('%(VIRTUAL_ENV_VAR)s'):
