@@ -19,4 +19,14 @@ Usage
     remove -dry, once you understand what it will do.
 
     pass -httpsClone only if -dev is passed to git clone development repos using https instead os ssh
+    
+===============
+Troubleshooting
+===============
 
+No root access?: You can try *pip install --user scipion-installer* to install it localy
+
+Missing dependencies: scipion needs python3-tkinter to work and an existing python3 installation.
+For ubuntu/debian you might need root access to run 
+
+    sudo apt-get install python3-tk
