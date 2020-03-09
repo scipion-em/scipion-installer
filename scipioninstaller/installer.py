@@ -32,7 +32,6 @@ def askForInput(message):
 
 
 def getEnvironmentCreationCmd(conda, scipionHome):
-
     if conda:
         cmd = getCondaCmd()
     else:
@@ -128,7 +127,7 @@ def getRepoInstallCommand(scipionHome, repoName, useHttps, organization='scipion
     return cmd
 
 
-def getInstallationCmd(scipionHome, dev, useHttps):
+def getInstallationCmd(scipionHome, dev, useHttps, noXmipp):
     if dev:
         cmd = cmdfy("cd %s" % scipionHome)
         # Scipion repos
@@ -136,18 +135,19 @@ def getInstallationCmd(scipionHome, dev, useHttps):
         cmd += getRepoInstallCommand(scipionHome, "scipion-em", useHttps)
         cmd += getRepoInstallCommand(scipionHome, "scipion-app", useHttps)
 
-        #Xmipp repos
-        cmd += cmdfy("echo '\033[1m\033[95m > Installing Xmipp-dev ...\033[0m'")
-        cmd += getRepoInstallCommand(scipionHome, "xmipp", useHttps,
-                                     organization='i2pc', branch=XMIPP_DEVEL_BRANCH,
-                                     pipInstall=False, cloneFolder='xmipp-bundle')
-        cmd += cmdfy("(cd xmipp-bundle && ./xmipp all br=%s)" % XMIPP_DEVEL_BRANCH)
-        cmd += cmdfy("pip install -e xmipp-bundle/src/scipion-em-xmipp")
-        cmd += cmdfy("mkdir -p software/lib")
-        cmd += cmdfy("mkdir -p software/bindings")
-        cmd += cmdfy("mkdir -p software/em")
-        cmd += cmdfy("rm -rf software/em/xmipp ; "
-                     "ln -s $PWD/xmipp-bundle/build software/em/xmipp")
+        if not noXmipp:
+            #Xmipp repos
+            cmd += cmdfy("echo '\033[1m\033[95m > Installing Xmipp-dev ...\033[0m'")
+            cmd += getRepoInstallCommand(scipionHome, "xmipp", useHttps,
+                                         organization='i2pc', branch=XMIPP_DEVEL_BRANCH,
+                                         pipInstall=False, cloneFolder='xmipp-bundle')
+            cmd += cmdfy("(cd xmipp-bundle && ./xmipp all br=%s)" % XMIPP_DEVEL_BRANCH)
+            cmd += cmdfy("pip install -e xmipp-bundle/src/scipion-em-xmipp")
+            cmd += cmdfy("mkdir -p software/lib")
+            cmd += cmdfy("mkdir -p software/bindings")
+            cmd += cmdfy("mkdir -p software/em")
+            cmd += cmdfy("rm -rf software/em/xmipp ; "
+                         "ln -s $PWD/xmipp-bundle/build software/em/xmipp")
 
     else:
         cmd = cmdfy("pip install scipion-app")
@@ -199,7 +199,10 @@ def main():
                             action='store_true')
         parser.add_argument('-dev', help='installs components in devel mode',
                             action='store_true')
-
+        parser.add_argument('-noXmipp', help='Xmipp is installed in devel mode '
+                                             'under xmipp-bundle dir by default. '
+                                             'This flag skips the Xmipp installation.',
+                            action='store_true')
         parser.add_argument('-dry', help='Just shows the commands without running them.',
                             action='store_true')
         
@@ -229,11 +232,10 @@ def main():
 
         dry = args.dry
         checkProgram(GIT) if dev else None
-
         # Check Scipion home folder and create it if apply.
         solveScipionHome(scipionHome, dry)
         cmd = getEnvironmentCreationCmd(conda, scipionHome)
-        cmd += getInstallationCmd(scipionHome, dev, args.httpsClone)
+        cmd += getInstallationCmd(scipionHome, dev, args.httpsClone, args.noXmipp)
         runCmd(cmd, dry)
 
         launcher = createLauncher(scipionHome, conda, dry, dev)
