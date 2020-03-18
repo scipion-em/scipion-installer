@@ -135,6 +135,10 @@ def getInstallationCmd(scipionHome, dev, useHttps, noXmipp):
         cmd += getRepoInstallCommand(scipionHome, "scipion-em", useHttps)
         cmd += getRepoInstallCommand(scipionHome, "scipion-app", useHttps)
 
+        cmd += cmdfy("mkdir -p software/lib")
+        cmd += cmdfy("mkdir -p software/bindings")
+        cmd += cmdfy("mkdir -p software/em")
+
         if not noXmipp:
             #Xmipp repos
             cmd += cmdfy("echo '\033[1m\033[95m > Installing Xmipp-dev ...\033[0m'")
@@ -143,9 +147,6 @@ def getInstallationCmd(scipionHome, dev, useHttps, noXmipp):
                                          pipInstall=False, cloneFolder='xmipp-bundle')
             cmd += cmdfy("(cd xmipp-bundle && ./xmipp all br=%s)" % XMIPP_DEVEL_BRANCH)
             cmd += cmdfy("pip install -e xmipp-bundle/src/scipion-em-xmipp")
-            cmd += cmdfy("mkdir -p software/lib")
-            cmd += cmdfy("mkdir -p software/bindings")
-            cmd += cmdfy("mkdir -p software/em")
             cmd += cmdfy("rm -rf software/em/xmipp ; "
                          "ln -s $PWD/xmipp-bundle/build software/em/xmipp")
 
