@@ -24,9 +24,17 @@ Usage
 Troubleshooting
 ===============
 
+Pip is needed to get the installer. For ubuntu/debian you might need root access to run 
+
+    sudo apt-get install python-pip
+
 No root access?: You can try *pip install --user scipion-installer* to install it localy
 
 Missing dependencies: scipion needs python3-tkinter to work and an existing python3 installation.
 For ubuntu/debian you might need root access to run 
 
     sudo apt-get install python3-tk
+    
+If error `Error: “pkg_resources.DistributionNotFound: The 'zipp>=0.5'` is raised when launching installscipion, try to install zipp by
+
+    pip install zipp
