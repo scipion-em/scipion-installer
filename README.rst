@@ -35,6 +35,6 @@ For ubuntu/debian you might need root access to run
 
     sudo apt-get install python3-tk
     
-If error `Error: “pkg_resources.DistributionNotFound: The 'zipp>=0.5'` is raised when launching installscipion, try to install zipp by
+If *Error: “pkg_resources.DistributionNotFound: The 'zipp>=0.5'* is raised when launching installscipion, try to install zipp by
 
     pip install zipp
