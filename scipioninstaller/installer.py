@@ -150,7 +150,7 @@ def getInstallationCmd(scipionHome, dev, useHttps, noXmipp):
             cmd += cmdfy("(cd xmipp-bundle && ./xmipp get_devel_sources %s)" % XMIPP_DEVEL_BRANCH)
             cmd += cmdfy("pip install -e xmipp-bundle/src/scipion-em-xmipp")
             cmd += cmdfy("export SCIPION_HOME=%s" % scipionHome)
-            cmd += cmdfy("python -m scipion installb xmippDev")
+            cmd += cmdfy("python -m scipion installb xmippDev -j 4")
             cmd += cmdfy("rm -rf software/em/xmipp && "
                          "ln -s $PWD/xmipp-bundle/build software/em/xmipp")
 
