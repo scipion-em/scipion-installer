@@ -1,6 +1,7 @@
 # !/usr/bin/env python
 import os
 import argparse
+import sys
 
 from scipioninstaller import INSTALL_ENTRY
 # Virtual env programs
@@ -70,7 +71,7 @@ def cmdfy(cmd, sep=CMD_SEP):
 def getVirtualenvCmd(scipionHome):
 
     cmd = cmdfy("cd %s" % scipionHome)
-    cmd += cmdfy("python -m virtualenv --python=python3 %s" % SCIPION_ENV)
+    cmd += cmdfy("%s -m virtualenv --python=python3 %s" % (sys.executable, SCIPION_ENV))
     cmd += cmdfy(getVirtualenvActivationCmd(scipionHome))
     return cmd
 
@@ -145,9 +146,12 @@ def getInstallationCmd(scipionHome, dev, useHttps, noXmipp):
             cmd += getRepoInstallCommand(scipionHome, "xmipp", useHttps,
                                          organization='i2pc', branch=XMIPP_DEVEL_BRANCH,
                                          pipInstall=False, cloneFolder='xmipp-bundle')
-            cmd += cmdfy("(cd xmipp-bundle && ./xmipp all br=%s)" % XMIPP_DEVEL_BRANCH)
+
+            cmd += cmdfy("(cd xmipp-bundle && ./xmipp get_devel_sources %s)" % XMIPP_DEVEL_BRANCH)
             cmd += cmdfy("pip install -e xmipp-bundle/src/scipion-em-xmipp")
-            cmd += cmdfy("rm -rf software/em/xmipp ; "
+            cmd += cmdfy("export SCIPION_HOME=%s" % scipionHome)
+            cmd += cmdfy("python -m scipion installb xmippDev")
+            cmd += cmdfy("rm -rf software/em/xmipp && "
                          "ln -s $PWD/xmipp-bundle/build software/em/xmipp")
 
     else:
