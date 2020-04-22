@@ -25,4 +25,4 @@ else:
 
 # Set SCIPION_HOME
 os.environ["SCIPION_HOME"] = scipionHome
-os.system(cmd)'''
+exit(os.WEXITSTATUS(os.system(cmd)))'''
