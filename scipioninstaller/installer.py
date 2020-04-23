@@ -128,8 +128,14 @@ def getRepoInstallCommand(scipionHome, repoName, useHttps, organization='scipion
     return cmd
 
 
-def getInstallationCmd(scipionHome, dev, useHttps, noXmipp):
+def getInstallationCmd(scipionHome, dev, args):
     if dev:
+        useHttps = args.httpsClone
+        noXmipp = args.noXmipp
+        try:
+            nProcess = int(args.j)
+        except:
+            nProcess = 8
         cmd = cmdfy("cd %s" % scipionHome)
         # Scipion repos
         cmd += getRepoInstallCommand(scipionHome, "scipion-pyworkflow", useHttps)
@@ -150,9 +156,7 @@ def getInstallationCmd(scipionHome, dev, useHttps, noXmipp):
             cmd += cmdfy("(cd xmipp-bundle && ./xmipp get_devel_sources %s)" % XMIPP_DEVEL_BRANCH)
             cmd += cmdfy("pip install -e xmipp-bundle/src/scipion-em-xmipp")
             cmd += cmdfy("export SCIPION_HOME=%s" % scipionHome)
-            cmd += cmdfy("python -m scipion installb xmippDev -j 4")
-            cmd += cmdfy("rm -rf software/em/xmipp && "
-                         "ln -s $PWD/xmipp-bundle/build software/em/xmipp")
+            cmd += cmdfy("python -m scipion installb xmippDev -j %d" % nProcess)
 
     else:
         cmd = cmdfy("pip install scipion-app")
@@ -208,6 +212,7 @@ def main():
                                              'under xmipp-bundle dir by default. '
                                              'This flag skips the Xmipp installation.',
                             action='store_true')
+        parser.add_argument('-j', help='Number of processors, Xmipp may take a while...')
         parser.add_argument('-dry', help='Just shows the commands without running them.',
                             action='store_true')
         
@@ -240,7 +245,7 @@ def main():
         # Check Scipion home folder and create it if apply.
         solveScipionHome(scipionHome, dry)
         cmd = getEnvironmentCreationCmd(conda, scipionHome)
-        cmd += getInstallationCmd(scipionHome, dev, args.httpsClone, args.noXmipp)
+        cmd += getInstallationCmd(scipionHome, dev, args)
         runCmd(cmd, dry)
 
         launcher = createLauncher(scipionHome, conda, dry, dev)
