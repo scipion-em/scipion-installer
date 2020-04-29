@@ -163,7 +163,7 @@ def getInstallationCmd(scipionHome, dev, args):
 
     else:
         cmd = cmdfy("pip install scipion-pyworkflow")
-        cmd = cmdfy(cmd + "pip install scipion-app")
+        cmd += cmdfy("pip install scipion-app")
     return cmd
 
 
