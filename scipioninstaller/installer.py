@@ -27,9 +27,12 @@ except:
     ask = input
 
 
-def askForInput(message):
-
-    return ask(message)
+def askForInput(message, noAsk=True):
+    if not noAsk:
+        return ask(message)
+    else:
+        print(message, YES)
+        return YES
 
 
 def getEnvironmentCreationCmd(conda, scipionHome):
@@ -89,11 +92,11 @@ def checkProgram(program):
         raise InstallationError("%s command not found." % program)
 
 
-def solveScipionHome(scipionHome, dry):
+def solveScipionHome(scipionHome, dry, noAsk=False):
     # Check folder exists
     if not os.path.exists(scipionHome):
 
-        answer = askForInput("path %s does not exists. Shall I create it? (%s/%s): " % (scipionHome, YES, NO))
+        answer = askForInput("path %s does not exists. Shall I create it? (%s/%s): " % (scipionHome, YES, NO), noAsk)
 
         if answer != YES:
             raise InstallationError("Cannot continue without creating %s" % scipionHome)
@@ -159,7 +162,8 @@ def getInstallationCmd(scipionHome, dev, args):
             cmd += cmdfy("python -m scipion installb xmippDev -j %d" % nProcess)
 
     else:
-        cmd = cmdfy("pip install scipion-app")
+        cmd = cmdfy("pip install scipion-pyworkflow")
+        cmd = cmdfy(cmd + "pip install scipion-app")
     return cmd
 
 
@@ -220,30 +224,38 @@ def main():
                                                 'makes git clones using https '
                                                 'instead of ssh',
                             action='store_true')
+
+        parser.add_argument('-noAsk',
+                            help='try to install scipion ignoring some '
+                                 'control questions in that process. You must '
+                                 'make sure to write the correct path where '
+                                 'Scipion will be installed',
+                            action='store_true')
         
 
         # Parse and fill args
         args = parser.parse_args()
         scipionHome = os.path.abspath(args.path)
         conda = args.conda
+        noAsk = args.noAsk
+
          # Warn about conda fonts...
         if conda and askForInput("Conda installations will have a poor font and may"
-            " affect your user experience. Are you sure you want to continue? (%s/%s): " % (YES, NO)) !=YES:
+            " affect your user experience. Are you sure you want to continue? (%s/%s): " % (YES, NO), noAsk) !=YES:
             raise InstallationError("Cancelling installation with conda.")
 
         dev = args.dev
-        # TODO: Remove this when releasing scipion3 on pypi.
-        dev = True
+
         if askForInput("This is an early version of the installer. "
                        "So far only works for developers installing an unstable version."
                        "Are you sure you want to continue? (%s/%s): " % (
-                                 YES, NO)) != YES:
+                                 YES, NO), noAsk) != YES:
             raise InstallationError("User cancelled development/unstable installation.")
 
         dry = args.dry
         checkProgram(GIT) if dev else None
         # Check Scipion home folder and create it if apply.
-        solveScipionHome(scipionHome, dry)
+        solveScipionHome(scipionHome, dry, noAsk)
         cmd = getEnvironmentCreationCmd(conda, scipionHome)
         cmd += getInstallationCmd(scipionHome, dev, args)
         runCmd(cmd, dry)
@@ -253,10 +265,9 @@ def main():
             print("\n\nScipion has been successfully installed!! Happy EM processing!!\n\n")
             print("You can launch Scipion using the launcher at %s\n" % launcher )
 
-
     except InstallationError as e:
-        print (str(e))
-        print ("Installation cancelled.")
+        print(str(e))
+        print("Installation cancelled.")
     except KeyboardInterrupt as e:
         print("\nInstallation cancelled, probably by pressing \"Ctrl + c\".")
 
@@ -268,7 +279,7 @@ def runCmd(cmd, dry):
         cmd = cmd[:-len(CMD_SEP)]
 
     if dry:
-        print (cmd)
+        print(cmd)
     else:
         val = os.system(cmd)
         if val != 0:
