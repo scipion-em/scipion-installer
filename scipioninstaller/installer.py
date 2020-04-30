@@ -27,7 +27,7 @@ except:
     ask = input
 
 
-def askForInput(message, noAsk=True):
+def askForInput(message, noAsk):
     if not noAsk:
         return ask(message)
     else:
@@ -92,7 +92,7 @@ def checkProgram(program):
         raise InstallationError("%s command not found." % program)
 
 
-def solveScipionHome(scipionHome, dry, noAsk=False):
+def solveScipionHome(scipionHome, dry, noAsk):
     # Check folder exists
     if not os.path.exists(scipionHome):
 
