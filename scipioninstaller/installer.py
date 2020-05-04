@@ -155,8 +155,8 @@ def getInstallationCmd(scipionHome, dev, args):
             cmd += getRepoInstallCommand(scipionHome, "xmipp", useHttps,
                                          organization='i2pc', branch=XMIPP_DEVEL_BRANCH,
                                          pipInstall=False, cloneFolder='xmipp-bundle')
-
-            cmd += cmdfy("(cd xmipp-bundle && ./xmipp get_devel_sources %s)" % XMIPP_DEVEL_BRANCH)
+            cmd += cmdfy("xmipp-bundle/xmipp get_devel_sources %s" % XMIPP_DEVEL_BRANCH)
+            cmd += cmdfy("xmipp-bundle/xmipp config")  # This reset the xmipp.conf
             cmd += cmdfy("pip install -e xmipp-bundle/src/scipion-em-xmipp")
             cmd += cmdfy("export SCIPION_HOME=%s" % scipionHome)
             cmd += cmdfy("python -m scipion installb xmippDev -j %d" % nProcess)
