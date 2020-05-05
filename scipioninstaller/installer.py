@@ -242,10 +242,10 @@ def main():
                                  'make sure to write the correct path where '
                                  'Scipion will be installed',
                             action='store_true')
-        parser.add_argument('-scipionEnv', help='Name of the virtual environment. '
+        parser.add_argument('-n', help='Name of the virtual environment. '
                                              'By default, if this parameter is '
                                              'not passed, the name will be '
-                                             '.scipion3env',
+                                             + SCIPION_ENV,
                             default=SCIPION_ENV)
         
 
@@ -272,7 +272,7 @@ def main():
         checkProgram(GIT) if dev else None
         # Check Scipion home folder and create it if apply.
         solveScipionHome(scipionHome, dry, noAsk)
-        scipionEnv = args.scipionEnv
+        scipionEnv = args.n
 
         cmd = getEnvironmentCreationCmd(conda, scipionHome, scipionEnv)
         cmd += getInstallationCmd(scipionHome, dev, args)
