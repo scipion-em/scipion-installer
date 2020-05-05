@@ -28,7 +28,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='scipion-installer',  # Required
-    version='0.10.5-a',  # Required
+    version='0.10.6-a',  # Required
     description='Installs scipion 3 creating a virtual environment for it, for now only for developers.',  # Required
     long_description=long_description,  # Optional
     url='https://github.com/scipion-em/scipion-installer',  # Optional
