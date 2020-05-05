@@ -5,7 +5,8 @@ import sys
 
 from scipioninstaller import INSTALL_ENTRY
 # Virtual env programs
-from scipioninstaller.launchers import LAUNCHER_TEMPLATE, VIRTUAL_ENV_VAR, ACTIVATE_ENV_CMD
+from scipioninstaller.launchers import (LAUNCHER_TEMPLATE, VIRTUAL_ENV_VAR,
+                                        ACTIVATE_ENV_CMD)
 
 CMD_SEP = " &&\n"
 CONDA = 'conda'
@@ -35,11 +36,11 @@ def askForInput(message, noAsk):
         return YES
 
 
-def getEnvironmentCreationCmd(conda, scipionHome):
+def getEnvironmentCreationCmd(conda, scipionHome, scipionEnv):
     if conda:
-        cmd = getCondaCmd()
+        cmd = getCondaCmd(scipionEnv)
     else:
-        cmd = getVirtualenvCmd(scipionHome)
+        cmd = getVirtualenvCmd(scipionHome, scipionEnv)
 
     return cmd
 
@@ -48,12 +49,12 @@ class InstallationError(Exception):
     pass
 
 
-def getCondaCmd():
+def getCondaCmd(scipionEnv):
 
     checkProgram(CONDA)
     cmd = cmdfy(getCondaInitCmd())
-    cmd += cmdfy("%s create -n %s python=3" % (CONDA, SCIPION_ENV))
-    cmd += cmdfy(getCondaenvActivationCmd())
+    cmd += cmdfy("%s create -n %s python=3" % (CONDA, scipionEnv))
+    cmd += cmdfy(getCondaenvActivationCmd(scipionEnv))
     return cmd
 
 
@@ -62,8 +63,8 @@ def getCondaInitCmd():
     return 'eval "$(conda shell.%s hook)"' % os.path.basename(shell)
 
 
-def getCondaenvActivationCmd():
-    return "conda activate %s" % SCIPION_ENV
+def getCondaenvActivationCmd(scipionEnv):
+    return "conda activate %s" % scipionEnv
 
 
 def cmdfy(cmd, sep=CMD_SEP):
@@ -71,16 +72,17 @@ def cmdfy(cmd, sep=CMD_SEP):
     return cmd + sep
 
 
-def getVirtualenvCmd(scipionHome):
+def getVirtualenvCmd(scipionHome, scipionEnv):
 
     cmd = cmdfy("cd %s" % scipionHome)
-    cmd += cmdfy("%s -m virtualenv --python=python3 %s" % (sys.executable, SCIPION_ENV))
-    cmd += cmdfy(getVirtualenvActivationCmd(scipionHome))
+    cmd += cmdfy("%s -m virtualenv --python=python3 %s" % (sys.executable,
+                                                           scipionEnv))
+    cmd += cmdfy(getVirtualenvActivationCmd(scipionHome, scipionEnv))
     return cmd
 
 
-def getVirtualenvActivationCmd(scipionHome):
-    return ". %s" % os.path.join(scipionHome, SCIPION_ENV, "bin", "activate")
+def getVirtualenvActivationCmd(scipionHome, scipionEnv):
+    return ". %s" % os.path.join(scipionHome, scipionEnv, "bin", "activate")
 
 
 def checkProgram(program):
@@ -96,10 +98,12 @@ def solveScipionHome(scipionHome, dry, noAsk):
     # Check folder exists
     if not os.path.exists(scipionHome):
 
-        answer = askForInput("path %s does not exists. Shall I create it? (%s/%s): " % (scipionHome, YES, NO), noAsk)
+        answer = askForInput("path %s does not exists. Shall I create "
+                             "it? (%s/%s): " % (scipionHome, YES, NO), noAsk)
 
         if answer != YES:
-            raise InstallationError("Cannot continue without creating %s" % scipionHome)
+            raise InstallationError("Cannot continue without creating %s" %
+                                    scipionHome)
         else:
             try:
                 if not dry:
@@ -108,10 +112,13 @@ def solveScipionHome(scipionHome, dry, noAsk):
                     print ("%s would have been created." % scipionHome)
             except OSError as e:
                 print (e)
-                raise InstallationError("Please, verify that you have permissions to create %s" % scipionHome)
+                raise InstallationError("Please, verify that you have "
+                                        "permissions to create %s" % scipionHome)
 
 
-def getRepoInstallCommand(scipionHome, repoName, useHttps, organization='scipion-em', branch='devel', pipInstall=True, cloneFolder=''):
+def getRepoInstallCommand(scipionHome, repoName, useHttps,
+                          organization='scipion-em', branch='devel',
+                          pipInstall=True, cloneFolder=''):
     
     # Choose url type: ssh or https
     cloneUrl= 'git@github.com:%s/%s.git' if not useHttps else 'https://github.com/%s/%s.git'
@@ -119,8 +126,10 @@ def getRepoInstallCommand(scipionHome, repoName, useHttps, organization='scipion
     # replace the repository name
     cloneUrl = cloneUrl % (organization, repoName)
     
-    if not os.path.exists(os.path.join(scipionHome, repoName if cloneFolder == '' else cloneFolder)):
-        cmd = cmdfy("git clone --branch %s %s %s" % (branch, cloneUrl, cloneFolder))
+    if not os.path.exists(os.path.join(scipionHome,
+                                       repoName if cloneFolder == '' else cloneFolder)):
+        cmd = cmdfy("git clone --branch %s %s %s" % (branch, cloneUrl,
+                                                     cloneFolder))
     else:
         cmd = ""
         print("Print %s repository detected, skipping clone." % repoName)
@@ -132,6 +141,12 @@ def getRepoInstallCommand(scipionHome, repoName, useHttps, organization='scipion
 
 
 def getInstallationCmd(scipionHome, dev, args):
+
+    cmd = cmdfy("cd %s" % scipionHome)
+    cmd += cmdfy("mkdir -p software/lib")
+    cmd += cmdfy("mkdir -p software/bindings")
+    cmd += cmdfy("mkdir -p software/em")
+
     if dev:
         useHttps = args.httpsClone
         noXmipp = args.noXmipp
@@ -139,15 +154,11 @@ def getInstallationCmd(scipionHome, dev, args):
             nProcess = int(args.j)
         except:
             nProcess = 8
-        cmd = cmdfy("cd %s" % scipionHome)
+
         # Scipion repos
         cmd += getRepoInstallCommand(scipionHome, "scipion-pyworkflow", useHttps)
         cmd += getRepoInstallCommand(scipionHome, "scipion-em", useHttps)
         cmd += getRepoInstallCommand(scipionHome, "scipion-app", useHttps)
-
-        cmd += cmdfy("mkdir -p software/lib")
-        cmd += cmdfy("mkdir -p software/bindings")
-        cmd += cmdfy("mkdir -p software/em")
 
         if not noXmipp:
             #Xmipp repos
@@ -162,12 +173,12 @@ def getInstallationCmd(scipionHome, dev, args):
             cmd += cmdfy("python -m scipion installb xmippDev -j %d" % nProcess)
 
     else:
-        cmd = cmdfy("pip install scipion-pyworkflow")
+        cmd += cmdfy("pip install scipion-pyworkflow")
         cmd += cmdfy("pip install scipion-app")
     return cmd
 
 
-def createLauncher(scipionHome, conda, dry, devel=False):
+def createLauncher(scipionHome, conda, dry, scipionEnv, devel=False):
 
     if devel:
         # TODO: Contemplate different launcher template (ex: scipion3 git [options])
@@ -177,10 +188,10 @@ def createLauncher(scipionHome, conda, dry, devel=False):
 
     if conda:
         replaceDict = {VIRTUAL_ENV_VAR: "CONDA_DEFAULT_ENV",
-                        ACTIVATE_ENV_CMD: getCondaInitCmd() + " && " + getCondaenvActivationCmd()}
+                        ACTIVATE_ENV_CMD: getCondaInitCmd() + " && " + getCondaenvActivationCmd(scipionEnv)}
     else:
         replaceDict = {VIRTUAL_ENV_VAR: "VIRTUAL_ENV",
-                        ACTIVATE_ENV_CMD: getVirtualenvActivationCmd(scipionHome)}
+                        ACTIVATE_ENV_CMD: getVirtualenvActivationCmd(scipionHome, scipionEnv)}
 
     # Replace values
     content = content % replaceDict
@@ -231,6 +242,10 @@ def main():
                                  'make sure to write the correct path where '
                                  'Scipion will be installed',
                             action='store_true')
+        parser.add_argument('-scipionEnv', help='Name of the virtual environment. '
+                                             'By default, if this parameter is '
+                                             'not passed, the name will be '
+                                             '.scipion3env')
         
 
         # Parse and fill args
@@ -256,11 +271,16 @@ def main():
         checkProgram(GIT) if dev else None
         # Check Scipion home folder and create it if apply.
         solveScipionHome(scipionHome, dry, noAsk)
-        cmd = getEnvironmentCreationCmd(conda, scipionHome)
+        try:
+            scipionEnv = str(args.scipionEnv)
+        except:
+            scipionEnv = SCIPION_ENV
+
+        cmd = getEnvironmentCreationCmd(conda, scipionHome, scipionEnv)
         cmd += getInstallationCmd(scipionHome, dev, args)
         runCmd(cmd, dry)
 
-        launcher = createLauncher(scipionHome, conda, dry, dev)
+        launcher = createLauncher(scipionHome, conda, dry, scipionEnv, dev)
         if not dry:
             print("\n\nScipion has been successfully installed!! Happy EM processing!!\n\n")
             print("You can launch Scipion using the launcher at %s\n" % launcher )
