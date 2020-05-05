@@ -20,7 +20,7 @@ YES = "y"
 NO = "n"
 
 # Python 2 vs 3 differences
-try:
+try:  
     # Python 2 methods
     ask = raw_input
 except:
@@ -245,7 +245,8 @@ def main():
         parser.add_argument('-scipionEnv', help='Name of the virtual environment. '
                                              'By default, if this parameter is '
                                              'not passed, the name will be '
-                                             '.scipion3env')
+                                             '.scipion3env',
+                            default=SCIPION_ENV)
         
 
         # Parse and fill args
@@ -271,10 +272,7 @@ def main():
         checkProgram(GIT) if dev else None
         # Check Scipion home folder and create it if apply.
         solveScipionHome(scipionHome, dry, noAsk)
-        try:
-            scipionEnv = str(args.scipionEnv)
-        except:
-            scipionEnv = SCIPION_ENV
+        scipionEnv = args.scipionEnv
 
         cmd = getEnvironmentCreationCmd(conda, scipionHome, scipionEnv)
         cmd += getInstallationCmd(scipionHome, dev, args)
