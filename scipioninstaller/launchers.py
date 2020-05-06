@@ -18,9 +18,8 @@ if len(sys.argv) > 1 and sys.argv[1] == 'git':
         cmd += ("(cd "+join(scipionHome, repo)+" ; echo ' > in "+repo+":' ;"
                 " git "+' '.join(sys.argv[2:])+" ; echo) ; ")
 else:
-    # Activate the environment if not active
-    if not os.environ.get('%(VIRTUAL_ENV_VAR)s'):
-        cmd = '%(ACTIVATE_ENV_CMD)s && '
+    # Activate the environment
+    cmd = '%(ACTIVATE_ENV_CMD)s && '
     
     cmd += "python -m scipion %%s" %% " ".join(sys.argv[1:])
 
