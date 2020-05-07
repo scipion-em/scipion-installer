@@ -57,10 +57,14 @@ def getCondaCmd(scipionEnv):
     cmd += cmdfy(getCondaenvActivationCmd(scipionEnv))
     return cmd
 
+def getCondaBinPath():
+    import distutils.spawn
+    return distutils.spawn.find_executable("conda")
+
 
 def getCondaInitCmd():
-    shell = os.environ.get("SHELL")
-    return 'eval "$(conda shell.%s hook)"' % os.path.basename(shell)
+    shell = os.path.basename(os.environ.get("SHELL"))
+    return 'eval "$(%s shell.%s hook)"' % (getCondaBinPath(), shell)
 
 
 def getCondaenvActivationCmd(scipionEnv):
