@@ -28,11 +28,11 @@ with open('requirements.txt') as f:
 
 setup(
     name='scipion-installer',  # Required
-    version='0.10.8-a',  # Required
+    version='1.0.0-b',  # Required
     description='Installs scipion 3 creating a virtual environment for it, for now only for developers.',  # Required
     long_description=long_description,  # Optional
     url='https://github.com/scipion-em/scipion-installer',  # Optional
-    author='I2PC, Pablo Conesa',  # Optional
+    author='I2PC, Pablo Conesa, Yunior Fonseca',  # Optional
 
     # This should be a valid email address corresponding to the author listed
     # above.

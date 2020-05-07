@@ -20,7 +20,6 @@ if len(sys.argv) > 1 and sys.argv[1] == 'git':
 else:
     # Activate the environment
     cmd = '%(ACTIVATE_ENV_CMD)s && '
-    
     cmd += "python -m scipion %%s" %% " ".join(sys.argv[1:])
 
 # Set SCIPION_HOME
