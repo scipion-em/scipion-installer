@@ -36,9 +36,9 @@ def askForInput(message, noAsk):
         return YES
 
 
-def getEnvironmentCreationCmd(conda, scipionHome, scipionEnv):
+def getEnvironmentCreationCmd(conda, scipionHome, scipionEnv, noAsk):
     if conda:
-        cmd = getCondaCmd(scipionEnv)
+        cmd = getCondaCmd(scipionEnv, noAsk)
     else:
         cmd = getVirtualenvCmd(scipionHome, scipionEnv)
 
@@ -49,22 +49,17 @@ class InstallationError(Exception):
     pass
 
 
-def getCondaCmd(scipionEnv):
+def getCondaCmd(scipionEnv, noAsk):
 
-    checkProgram(CONDA)
+    silentMode = "-y" if noAsk else ""
     cmd = cmdfy(getCondaInitCmd())
-    cmd += cmdfy("%s create -n %s python=3" % (CONDA, scipionEnv))
+    cmd += cmdfy("%s create %s -n %s python=3" % (CONDA, silentMode, scipionEnv))
     cmd += cmdfy(getCondaenvActivationCmd(scipionEnv))
     return cmd
 
-def getCondaBinPath():
-    import distutils.spawn
-    return distutils.spawn.find_executable("conda")
-
-
 def getCondaInitCmd():
     shell = os.path.basename(os.environ.get("SHELL"))
-    return 'eval "$(%s shell.%s hook)"' % (getCondaBinPath(), shell)
+    return 'eval "$(%s shell.%s hook)"' % (checkProgram(CONDA), shell)
 
 
 def getCondaenvActivationCmd(scipionEnv):
@@ -94,9 +89,12 @@ def checkProgram(program):
 
     from distutils.spawn import find_executable
 
-    if find_executable(program) is None:
-        raise InstallationError("%s command not found." % program)
+    fullPath = find_executable(program)
 
+    if fullPath is None:
+        raise InstallationError("%s command not found." % program)
+    else:
+        return fullPath
 
 def solveScipionHome(scipionHome, dry, noAsk):
     # Check folder exists
@@ -150,14 +148,12 @@ def getInstallationCmd(scipionHome, dev, args):
     cmd += cmdfy("mkdir -p software/lib")
     cmd += cmdfy("mkdir -p software/bindings")
     cmd += cmdfy("mkdir -p software/em")
+    cmd += cmdfy("export SCIPION_HOME=%s" % scipionHome)
+
+    noXmipp = args.noXmipp
 
     if dev:
         useHttps = args.httpsClone
-        noXmipp = args.noXmipp
-        try:
-            nProcess = int(args.j)
-        except:
-            nProcess = 8
 
         # Scipion repos
         cmd += getRepoInstallCommand(scipionHome, "scipion-pyworkflow", useHttps)
@@ -173,12 +169,14 @@ def getInstallationCmd(scipionHome, dev, args):
             cmd += cmdfy("xmipp-bundle/xmipp get_devel_sources %s" % XMIPP_DEVEL_BRANCH)
             cmd += cmdfy("xmipp-bundle/xmipp config")  # This reset the xmipp.conf
             cmd += cmdfy("pip install -e xmipp-bundle/src/scipion-em-xmipp")
-            cmd += cmdfy("export SCIPION_HOME=%s" % scipionHome)
-            cmd += cmdfy("python -m scipion installb xmippDev -j %d" % nProcess)
+            cmd += cmdfy("python -m scipion installb xmippDev -j %s" % args.j)
 
     else:
         cmd += cmdfy("pip install scipion-pyworkflow")
         cmd += cmdfy("pip install scipion-app")
+
+        if not noXmipp:
+            cmd += cmdfy("python -m scipion installp -p scipion-em-xmipp -j %s" % args.j)
     return cmd
 
 
@@ -231,7 +229,8 @@ def main():
                                              'under xmipp-bundle dir by default. '
                                              'This flag skips the Xmipp installation.',
                             action='store_true')
-        parser.add_argument('-j', help='Number of processors, Xmipp may take a while...')
+        parser.add_argument('-j', help='Number of processors, Xmipp may take a while...',
+                            default=8)
         parser.add_argument('-dry', help='Just shows the commands without running them.',
                             action='store_true')
         
@@ -278,7 +277,7 @@ def main():
         solveScipionHome(scipionHome, dry, noAsk)
         scipionEnv = args.n
 
-        cmd = getEnvironmentCreationCmd(conda, scipionHome, scipionEnv)
+        cmd = getEnvironmentCreationCmd(conda, scipionHome, scipionEnv, noAsk)
         cmd += getInstallationCmd(scipionHome, dev, args)
         runCmd(cmd, dry)
 
