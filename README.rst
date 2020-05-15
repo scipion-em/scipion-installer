@@ -2,33 +2,69 @@
 Scipion installer
 =================
 
-**Scipion installer** is a Python module to install scipion 3. Is already in alfa. So not ready
-for production.
+**Scipion installer** is a python module to install scipion 3 (already in **alfa**)
+and not ready for production.
 
+This installer is python2 python3 compatible and is a very lightweight package.
+It will create a virtual environment (conda or virtualenv) with scipion in it.
 
 The entire collection is licensed under the terms of the GNU Public License,
 version 3 (GPLv3).
 
-=====
-Usage
-=====
+=======
+Install
+=======
+
+.. code-block::
+
+    python3 -m pip install scipion-installer
+    installscipion where-to-install-scipion
+
+NOTE: Installer works for python2 as well or using pip or pip3, so following commands should work
+
+.. code-block::
+
+    python2 -m pip install scipion-installer
     pip install scipion-installer
+    pip3 install scipion-installer
 
-    installscipion <path where you want scipion> -dev -dry [-httpsClone]
+================
+Advanced options
+================
 
-    remove -dry, once you understand what it will do.
+.. code-block::
 
-    pass -httpsClone only if -dev is passed to git clone development repos using https instead os ssh
+    installscipion [-h] [-conda] [-dev] [-noXmipp] [-j J] [-dry]
+                      [-httpsClone] [-noAsk] [-n N]
+                      path
+
+    positional arguments:
+      path         Location where you want scipion to be installed.
+
+    optional arguments:
+      -h, --help   show this help message and exit
+      -conda       Use conda, otherwise it will use virtualenv
+      -dev         installs components in devel mode
+      -noXmipp     Xmipp is installed by default. This flag skips the Xmipp installation.
+      -j J         Number of processors to compile Xmipp. The more the beeter ...
+      -dry         Just shows the commands without running them.
+      -httpsClone  Only when -dev is active, makes git clones using https instead
+                   of ssh
+      -noAsk       try to install scipion ignoring some control questions in the
+                   process.
+      -n N         Name of the virtual environment. By default, if this parameter
+                   is not passed, the name will be .scipion3env
+
     
 ===============
 Troubleshooting
 ===============
 
-Pip is needed to get the installer. For ubuntu/debian you might need root access to run 
+pip/pip3 is needed to get the installer. For ubuntu/debian you might need root access to run
 
     sudo apt-get install python-pip
 
-No root access?: You can try *pip install --user scipion-installer* to install it localy
+No root access?: You can try *pip install --user scipion-installer* to install it locally
 
 Missing dependencies: scipion needs python3-tkinter to work and an existing python3 installation.
 For ubuntu/debian you might need root access to run 
