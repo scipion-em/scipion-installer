@@ -5,28 +5,32 @@ Scipion installer
 **Scipion installer** is a python module to install scipion 3 (already in **alfa**)
 and not ready for production.
 
-This installer is python2 python3 compatible and is a very lightweight package.
-It will create a virtual environment (conda or virtualenv) with scipion in it.
+This installer is python2-python3 compatible and is a very lightweight package.
+It will create a **python3** virtual environment (conda or virtualenv) with scipion in it.
 
 The entire collection is licensed under the terms of the GNU Public License,
 version 3 (GPLv3).
 
-=======
-Install
-=======
+============
+Installation
+============
+
+It is a 2 lines' installation: First to install the installer, second to use the installer (to install scipion).
+
+*** Python 3 ***
 
 .. code-block::
 
     python3 -m pip install scipion-installer
-    installscipion where-to-install-scipion
+    python3 -m scipioninstaller where-to-install-scipion
 
-NOTE: Installer works for python2 as well or using pip or pip3, so following commands should work
+
+*** Python2 *** (You are going to need python3 anyway)
 
 .. code-block::
 
     python2 -m pip install scipion-installer
-    pip install scipion-installer
-    pip3 install scipion-installer
+    python2 -m scipioninstaller where-to-install-scipion
 
 ================
 Advanced options
