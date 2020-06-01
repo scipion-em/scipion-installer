@@ -50,7 +50,7 @@ Advanced options
       -conda       Use conda, otherwise it will use virtualenv
       -dev         installs components in devel mode
       -noXmipp     Xmipp is installed by default. This flag skips the Xmipp installation.
-      -j J         Number of processors to compile Xmipp. The more the beeter ...
+      -j J         Number of processors to compile Xmipp. The more the better ...
       -dry         Just shows the commands without running them.
       -httpsClone  Only when -dev is active, makes git clones using https instead
                    of ssh
