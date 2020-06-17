@@ -13,7 +13,7 @@ CONDA = 'conda'
 SCIPION_ENV = '.scipion3env'
 GIT = 'git'
 LAUNCHER_NAME = "scipion3"
-XMIPP_DEVEL_BRANCH = "python3_migration"
+XMIPP_DEVEL_BRANCH = "devel"
 
 # User answers
 YES = "y"
