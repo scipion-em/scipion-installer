@@ -8,5 +8,7 @@ on:
 jobs:
   deploy:
 
+    runs-on: ubuntu-latest
+
     steps:
-   - uses: scipion-em/actionRelease@v1.0.0-beta
+    - uses: scipion-em/actionRelease@v1.0.0-beta
