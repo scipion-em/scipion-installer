@@ -1,8 +1,2 @@
-name: master to pypi with comments
-uses: scipion-em/actionRelease@v1.0.0-beta
-on:
-  push:
-    # Sequence of patterns matched against refs/heads
-    branches:    
-      # Push events on master branch
-      - master
+steps:
+- uses: scipion-em/actionRelease@v1.0.0-beta
