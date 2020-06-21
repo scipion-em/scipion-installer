@@ -6,7 +6,7 @@ https://github.com/pypa/sampleproject
 """
 
 # Always prefer setuptools over distutils
-from scipioninstaller import INSTALL_ENTRY
+from scipioninstaller import INSTALL_ENTRY, __version__
 from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
@@ -28,7 +28,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='scipion-installer',  # Required
-    version='1.0.3-b',  # Required
+    version=__version__,  # Required
     description='Installs scipion 3 creating a virtual environment for it, for now only for developers.',  # Required
     long_description=long_description,  # Optional
     url='https://github.com/scipion-em/scipion-installer',  # Optional
@@ -47,7 +47,7 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 4 - Beta',
         # Indicate who your project is intended for
         'Intended Audience :: Science/Research',
         # Pick your license as you wish
@@ -58,6 +58,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Topic :: Scientific/Engineering'
     ],
     keywords='scipion cryoem imageprocessing scipion-3.0',  # Optional
