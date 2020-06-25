@@ -34,7 +34,7 @@ jobs:
         # twine upload dist/* -c "${{ secrets.PYPI_COMMENT }}"
     - name: Get version
       env:
-        PACKAGE_WITH_VERSION: ${{ secrets.FOLDER_WITH_VERSION }}"
+        FOLDER_WITH_VERSION: ${{ secrets.FOLDER_WITH_VERSION }}"
       run: |
         python -c "import $FOLDER_WITH_VERSION; print('::set_env name=PACKAGE_VERSION::v'+$FOLDER_WITH_VERSION.__version__);"
         echo "Version $PACKAGE_VERSION detected"
