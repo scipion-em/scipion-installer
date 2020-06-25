@@ -9,6 +9,8 @@ on:
   push:
     branches: [ master ]
 
+env:
+  FOLDER_WITH_VERSION: scipioninstaller
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   deploy:
@@ -35,9 +37,8 @@ jobs:
         # twine upload dist/* -c "${{ secrets.PYPI_COMMENT }}"
     - name: Get version
       run: |
-        python -c "import sys; print('::set_env name=PACKAGE_VERSION::' + sys.argv[1])" "${{ secrets.FOLDER_WITH_VERSION }}"
         printenv
-        #python -c "import $FOLDER_WITH_VERSION; print('::set_env name=${{ secrets.FOLDER_WITH_VERSION }}::v'+${{ secrets.FOLDER_WITH_VERSION }}.__version__);"
+        python -c "import $FOLDER_WITH_VERSION; print('::set_env name=${{ secrets.FOLDER_WITH_VERSION }}::v'+${{ secrets.FOLDER_WITH_VERSION }}.__version__);"
         #echo "Version ${{ secrets.FOLDER_WITH_VERSION }} detected"
     - name: Tag commit
       run: |
