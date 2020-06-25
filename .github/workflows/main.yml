@@ -40,4 +40,4 @@ jobs:
         export PACKAGE_VERSION=$(python -c "import $FOLDER_WITH_VERSION; print('v'+$FOLDER_WITH_VERSION.__version__);")
         printenv
         git tag $PACKAGE_VERSION
-        git push $PACKAGE_VERSION
+        git push origin $PACKAGE_VERSION
