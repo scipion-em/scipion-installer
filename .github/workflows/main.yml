@@ -35,15 +35,9 @@ jobs:
         #python setup.py sdist
         echo "${{ secrets.PYPI_COMMENT }}"
         # twine upload dist/* -c "${{ secrets.PYPI_COMMENT }}"
-    - name: Get version
+    - name: Get version and tag
       run: |
+        export PACKAGE_VERSION = $(python -c "import $FOLDER_WITH_VERSION; print('v'+$FOLDER_WITH_VERSION.__version__);")
         printenv
-        python -c "import $FOLDER_WITH_VERSION; print('::set_env name=$FOLDER_WITH_VERSION::v'+$FOLDER_WITH_VERSION.__version__);"
-        #echo "Version ${{ secrets.FOLDER_WITH_VERSION }} detected"
-    - name: Tag commit
-      run: |
-        printenv
-        #git tag $PACKAGE_VERSION
-    - name: Push tag
-      run: |
-        #git push $PACKAGE_VERSION
+        git tag $PACKAGE_VERSION
+        git push $PACKAGE_VERSION
