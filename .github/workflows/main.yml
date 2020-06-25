@@ -29,11 +29,10 @@ jobs:
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        PYPI_COMMENT: ${{ secrets.PYPI_COMMENT }}
       run: |
         python setup.py sdist
-        echo "$PYPI_COMMENT"
-        # twine upload dist/* -c "scipion-3.0"
+        echo "${{ secrets.PYPI_COMMENT }}"
+        twine upload dist/* -c "${{ secrets.PYPI_COMMENT }}"
     - name: Get version
       run: |
 
