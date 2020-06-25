@@ -38,12 +38,13 @@ jobs:
         FOLDER_WITH_VERSION: ${{ secrets.FOLDER_WITH_VERSION }}
       run: |
         echo $FOLDER_WITH_VERSION
-        python -c "import sys; print('::set_env name=FOLDER_WITH_VERSION::' + sys.argv[1])" "${{ secrets.FOLDER_WITH_VERSION }}"
-
+        python -c "import sys; print('::set_env name=PACKAGE_FOLDER::' + sys.argv[1])" "${{ secrets.FOLDER_WITH_VERSION }}"
+        printenv
         #python -c "import $FOLDER_WITH_VERSION; print('::set_env name=${{ secrets.FOLDER_WITH_VERSION }}::v'+${{ secrets.FOLDER_WITH_VERSION }}.__version__);"
         #echo "Version ${{ secrets.FOLDER_WITH_VERSION }} detected"
     - name: Tag commit
       run: |
+        printenv
         #git tag $PACKAGE_VERSION
     - name: Push tag
       run: |
