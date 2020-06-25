@@ -38,7 +38,7 @@ jobs:
         FOLDER_WITH_VERSION: ${{ secrets.FOLDER_WITH_VERSION }}
       run: |
         echo $FOLDER_WITH_VERSION
-        python -c "import sys; print('::set_env name=FOLDER_WITH_VERSION' + sys.argv[1])" $FOLDER_WITH_VERSION
+        python -c "import sys; print('::set_env name=FOLDER_WITH_VERSION::' + sys.argv[1])" $FOLDER_WITH_VERSION
 
         #python -c "import $FOLDER_WITH_VERSION; print('::set_env name=${{ secrets.FOLDER_WITH_VERSION }}::v'+${{ secrets.FOLDER_WITH_VERSION }}.__version__);"
         #echo "Version ${{ secrets.FOLDER_WITH_VERSION }} detected"
