@@ -8,6 +8,8 @@ from scipioninstaller import INSTALL_ENTRY
 from scipioninstaller.launchers import (LAUNCHER_TEMPLATE, VIRTUAL_ENV_VAR,
                                         ACTIVATE_ENV_CMD)
 
+VENV_ARG = '-venv'
+
 CMD_SEP = " &&\n"
 CONDA = 'conda'
 SCIPION_ENV = '.scipion3env'
@@ -221,8 +223,14 @@ def main():
         parser.add_argument('path',
                             help='Location where you want scipion to be installed.')
         parser.add_argument('-conda',
-                            help='Use conda environments, otherwise will use virtualenv',
+                            help='Force conda as environment manager, otherwise will use conda anyway if '
+                                 'found in the path, else: virtualenv.',
                             action='store_true')
+        parser.add_argument(VENV_ARG,
+                            help='Force virtualenv as environment manager, otherwise will use conda if '
+                                 'found in the path, otherwise: virtualenv.',
+                            action='store_true')
+
         parser.add_argument('-dev', help='installs components in devel mode',
                             action='store_true')
         parser.add_argument('-noXmipp', help='Xmipp is installed in devel mode '
@@ -255,8 +263,24 @@ def main():
         # Parse and fill args
         args = parser.parse_args()
         scipionHome = os.path.abspath(args.path)
-        conda = args.conda
+
+        # Decide on environment manager
+        if args.conda:
+            conda = args.conda
+        elif args.venv:
+            conda = False
+        else: # decide, favouring conda
+            # If conda is detected
+            if checkProgram(CONDA):
+                print("% detected. Favouring it. If you want a virtualenv installation "
+                      "cancel installation and pass %s it." % (CONDA, VENV_ARG))
+                conda = True
+            else:
+                # Fall back to virtualenv
+                conda = False
+
         noAsk = args.noAsk
+
 
          # Warn about conda fonts...
         if conda and askForInput("Conda installations will have a poor font and may"
