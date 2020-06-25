@@ -31,13 +31,14 @@ jobs:
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
         python setup.py sdist
+        echo "${{ secrets.PYPI_COMMENT }}"
         # twine upload dist/* -c "${{ secrets.PYPI_COMMENT }}"
     - name: Get version
-      env:
-        FOLDER_WITH_VERSION: ${{ secrets.FOLDER_WITH_VERSION }}"
       run: |
-        python -c "import $FOLDER_WITH_VERSION; print('::set_env name=PACKAGE_VERSION::v'+$FOLDER_WITH_VERSION.__version__);"
-        echo "Version $PACKAGE_VERSION detected"
+
+        echo "${{ secrets.FOLDER_WITH_VERSION }}"
+        python -c "import $FOLDER_WITH_VERSION; print('::set_env name=${{ secrets.FOLDER_WITH_VERSION }}::v'+${{ secrets.FOLDER_WITH_VERSION }}.__version__);"
+        echo "Version ${{ secrets.FOLDER_WITH_VERSION }} detected"
     - name: Tag commit
       run: |
         git tag $PACKAGE_VERSION
