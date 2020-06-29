@@ -15,8 +15,9 @@ CONDA = 'conda'
 SCIPION_ENV = '.scipion3env'
 GIT = 'git'
 LAUNCHER_NAME = "scipion3"
-XMIPP_DEVEL_BRANCH = "devel"
 
+XMIPP_DEFAULT_BRANCH = "devel"
+SCIPION_DEFAULT_BRANCH = "devel"
 # User answers
 YES = "y"
 NO = "n"
@@ -158,17 +159,17 @@ def getInstallationCmd(scipionHome, dev, args):
         useHttps = args.httpsClone
 
         # Scipion repos
-        cmd += getRepoInstallCommand(scipionHome, "scipion-pyworkflow", useHttps)
-        cmd += getRepoInstallCommand(scipionHome, "scipion-em", useHttps)
-        cmd += getRepoInstallCommand(scipionHome, "scipion-app", useHttps)
+        cmd += getRepoInstallCommand(scipionHome, "scipion-pyworkflow", useHttps, branch=args.sciBranch)
+        cmd += getRepoInstallCommand(scipionHome, "scipion-em", useHttps, branch=args.sciBranch)
+        cmd += getRepoInstallCommand(scipionHome, "scipion-app", useHttps, branch=args.sciBranch)
 
         if not noXmipp:
             #Xmipp repos
             cmd += cmdfy("echo '\033[1m\033[95m > Installing Xmipp-dev ...\033[0m'")
             cmd += getRepoInstallCommand(scipionHome, "xmipp", useHttps,
-                                         organization='i2pc', branch=XMIPP_DEVEL_BRANCH,
+                                         organization='i2pc', branch=args.xmippBranch,
                                          pipInstall=False, cloneFolder='xmipp-bundle')
-            cmd += cmdfy("xmipp-bundle/xmipp get_devel_sources %s" % XMIPP_DEVEL_BRANCH)
+            cmd += cmdfy("xmipp-bundle/xmipp get_devel_sources %s" % args.xmippBranch)
             cmd += cmdfy("xmipp-bundle/xmipp config")  # This reset the xmipp.conf
             cmd += cmdfy("pip install -e xmipp-bundle/src/scipion-em-xmipp")
             cmd += cmdfy("python -m scipion installb xmippDev -j %s" % args.j)
@@ -258,8 +259,14 @@ def main():
                                              'not passed, the name will be '
                                              + SCIPION_ENV,
                             default=SCIPION_ENV)
-        
 
+        parser.add_argument('-sciBranch', help='Name of the branch of scipion repos to clone when -dev is passed. '
+                                       'By default, ' + SCIPION_DEFAULT_BRANCH,
+                            default=SCIPION_DEFAULT_BRANCH)
+
+        parser.add_argument('-xmippBranch', help='Name of the branch of xmipp repos to clone when -dev is passed.'
+                                                   'By default, ' + XMIPP_DEFAULT_BRANCH,
+                            default=XMIPP_DEFAULT_BRANCH)
         # Parse and fill args
         args = parser.parse_args()
         scipionHome = os.path.abspath(args.path)
