@@ -71,11 +71,7 @@ Advanced options
 
 
 ===============
-Troubleshooting  -sciBranch SCIBRANCH  Name of the branch of scipion repos to clone when -dev
-                        is passed.
-  -xmippBranch XMIPPBRANCH
-                        Name of the branch of xmipp repos to clone when -dev
-                        is passed.
+Troubleshooting
 ===============
 
 pip/pip3 is needed to get the installer. For ubuntu/debian you might need root access to run
