@@ -63,7 +63,11 @@ Advanced options
                    Scipion will be installed
       -n N         Name of the virtual environment. By default, if this parameter
                    is not passed, the name will be .scipion3env
-    
+      -sciBranch SCIBRANCH  Name of the branch of scipion repos to clone when -dev
+                   is passed.
+      -xmippBranch XMIPPBRANCH
+                   Name of the branch of xmipp repos to clone when -dev
+                   is passed.
 ===============
 Troubleshooting
 ===============

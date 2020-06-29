@@ -260,12 +260,10 @@ def main():
                                              + SCIPION_ENV,
                             default=SCIPION_ENV)
 
-        parser.add_argument('-sciBranch', help='Name of the branch of scipion repos to clone when -dev is passed. '
-                                       'By default, ' + SCIPION_DEFAULT_BRANCH,
+        parser.add_argument('-sciBranch', help='Name of the branch of scipion repos to clone when -dev is passed.',
                             default=SCIPION_DEFAULT_BRANCH)
 
-        parser.add_argument('-xmippBranch', help='Name of the branch of xmipp repos to clone when -dev is passed.'
-                                                   'By default, ' + XMIPP_DEFAULT_BRANCH,
+        parser.add_argument('-xmippBranch', help='Name of the branch of xmipp repos to clone when -dev is passed.',
                             default=XMIPP_DEFAULT_BRANCH)
         # Parse and fill args
         args = parser.parse_args()
