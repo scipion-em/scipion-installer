@@ -87,15 +87,19 @@ def getVirtualenvActivationCmd(scipionHome, scipionEnv):
     return ". %s" % os.path.join(scipionHome, scipionEnv, "bin", "activate")
 
 
-def checkProgram(program):
-    """Check whether `name` is on PATH."""
+def checkProgram(program, doRaise=True):
+    """Check whether `name` is on PATH.
+    :param doRaise: (True) - raise an exception if not found otherwise, return empty string """
 
     from distutils.spawn import find_executable
 
     fullPath = find_executable(program)
 
     if fullPath is None:
-        raise InstallationError("%s command not found." % program)
+        if doRaise:
+            raise InstallationError("%s command not found." % program)
+        else:
+            return ""
     else:
         return fullPath
 
@@ -276,7 +280,7 @@ def main():
             conda = False
         else: # decide, favouring conda
             # If conda is detected
-            if checkProgram(CONDA):
+            if checkProgram(CONDA, doRaise=False):
                 print("% detected. Favouring it. If you want a virtualenv installation "
                       "cancel installation and pass %s it." % (CONDA, VENV_ARG))
                 conda = True
