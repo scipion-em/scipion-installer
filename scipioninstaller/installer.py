@@ -170,7 +170,7 @@ def getInstallationCmd(scipionHome, dev, args):
                                          organization='i2pc', branch=args.xmippBranch,
                                          pipInstall=False, cloneFolder='xmipp-bundle')
             cmd += cmdfy("xmipp-bundle/xmipp get_devel_sources %s" % args.xmippBranch)
-            cmd += cmdfy("xmipp-bundle/xmipp config")  # This reset the xmipp.conf
+            cmd += cmdfy("xmipp-bundle/xmipp config %s" % ('noAsk' if args.noAsk else ''))  # This reset the xmipp.conf
             cmd += cmdfy("pip install -e xmipp-bundle/src/scipion-em-xmipp")
             cmd += cmdfy("python -m scipion installb xmippDev -j %s" % args.j)
 
