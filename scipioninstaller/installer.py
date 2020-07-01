@@ -61,7 +61,7 @@ def getCondaCmd(scipionEnv, noAsk):
     return cmd
 
 def getCondaInitCmd():
-    shell = os.path.basename(os.environ.get("SHELL"))
+    shell = os.path.basename(os.environ.get("SHELL", "bash"))
     return 'eval "$(%s shell.%s hook)"' % (checkProgram(CONDA), shell)
 
 
