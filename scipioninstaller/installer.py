@@ -281,8 +281,8 @@ def main():
         else: # decide, favouring conda
             # If conda is detected
             if checkProgram(CONDA, doRaise=False):
-                print("% detected. Favouring it. If you want a virtualenv installation "
-                      "cancel installation and pass %s it." % (CONDA, VENV_ARG))
+                print("%s detected. Favouring it. If you want a virtualenv installation "
+                      "cancel installation and pass -%s ." % (CONDA, VENV_ARG))
                 conda = True
             else:
                 # Fall back to virtualenv
