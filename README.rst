@@ -73,14 +73,36 @@ Advanced options
 ===============
 Troubleshooting
 ===============
+**Problem**
 
-pip/pip3 is needed to get the installer. For ubuntu/debian you might need root access to run
+    git@github.com: Permission denied (publickey).
+    fatal: Could not read from remote repository.
+
+**Solution**
+Add :code:`-httpsClone`
+
+----
+
+**Problem**
+
+pip/pip3 is needed to get the installer. 
+
+**Solution**
+
+For ubuntu/debian you might need root access to run
 
     sudo apt-get install python-pip
 
-No root access?: You can try *pip install --user scipion-installer* to install it locally
+No root access?: You can try `pip install --user scipion-installer` to install it locally
+
+----
+
+**Problem**
 
 Missing dependencies: scipion needs python3-tkinter to work and an existing python3 installation.
+
+**Solution**
+
 For ubuntu/debian you might need root access to run 
 
     sudo apt-get install python3-tk
