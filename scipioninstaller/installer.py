@@ -107,22 +107,15 @@ def solveScipionHome(scipionHome, dry, noAsk):
     # Check folder exists
     if not os.path.exists(scipionHome):
 
-        answer = askForInput("path %s does not exists. Shall I create "
-                             "it? (%s/%s): " % (scipionHome, YES, NO), noAsk)
-
-        if answer != YES:
-            raise InstallationError("Cannot continue without creating %s" %
-                                    scipionHome)
-        else:
-            try:
-                if not dry:
-                    os.mkdir(scipionHome)
-                else:
-                    print ("%s would have been created." % scipionHome)
-            except OSError as e:
-                print (e)
-                raise InstallationError("Please, verify that you have "
-                                        "permissions to create %s" % scipionHome)
+        try:
+            if not dry:
+                os.mkdir(scipionHome)
+            else:
+                print ("%s would have been created." % scipionHome)
+        except OSError as e:
+            print (e)
+            raise InstallationError("Please, verify that you have "
+                                    "permissions to create %s" % scipionHome)
 
 
 def getRepoInstallCommand(scipionHome, repoName, useHttps,
@@ -292,9 +285,9 @@ def main():
 
 
          # Warn about conda fonts...
-        if conda and askForInput("Conda installations will have a poor font and may"
-            " affect your user experience. Are you sure you want to continue? (%s/%s): " % (YES, NO), noAsk) !=YES:
-            raise InstallationError("Cancelling installation with conda.")
+        # if conda and askForInput("Conda installations will have a poor font and may"
+        #     " affect your user experience. Are you sure you want to continue? (%s/%s): " % (YES, NO), noAsk) !=YES:
+        #     raise InstallationError("Cancelling installation with conda.")
 
         dev = args.dev
 
