@@ -6,7 +6,7 @@ import sys
 from scipioninstaller import INSTALL_ENTRY
 # Virtual env programs
 from scipioninstaller.launchers import (LAUNCHER_TEMPLATE, VIRTUAL_ENV_VAR,
-                                        ACTIVATE_ENV_CMD)
+                                        ACTIVATE_ENV_CMD, PYTHON_PROGRAM)
 
 VENV_ARG = '-venv'
 
@@ -188,12 +188,15 @@ def createLauncher(scipionHome, conda, dry, scipionEnv, devel=False):
     else:
         content = LAUNCHER_TEMPLATE
 
+    pythonProgram = os.path.basename(sys.executable)
     if conda:
         replaceDict = {VIRTUAL_ENV_VAR: "CONDA_DEFAULT_ENV",
-                        ACTIVATE_ENV_CMD: getCondaInitCmd() + " && " + getCondaenvActivationCmd(scipionEnv)}
+                       ACTIVATE_ENV_CMD: getCondaInitCmd() + " && " + getCondaenvActivationCmd(scipionEnv),
+                       PYTHON_PROGRAM: str(pythonProgram)}
     else:
         replaceDict = {VIRTUAL_ENV_VAR: "VIRTUAL_ENV",
-                        ACTIVATE_ENV_CMD: getVirtualenvActivationCmd(scipionHome, scipionEnv)}
+                       ACTIVATE_ENV_CMD: getVirtualenvActivationCmd(scipionHome, scipionEnv),
+                       PYTHON_PROGRAM: str(pythonProgram)}
 
     # Replace values
     content = content % replaceDict
