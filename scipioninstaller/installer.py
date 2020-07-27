@@ -55,7 +55,7 @@ class InstallationError(Exception):
 def getCondaCmd(scipionEnv, noAsk):
 
     silentMode = "-y" if noAsk else ""
-    cmd = cmdfy(getCondaInitCmd())
+    cmd = '' #  Not needed since at installation time conda should be in the path: cmdfy(getCondaInitCmd())
     cmd += cmdfy("%s create %s -n %s python=3" % (CONDA, silentMode, scipionEnv))
     cmd += cmdfy(getCondaenvActivationCmd(scipionEnv))
     return cmd
