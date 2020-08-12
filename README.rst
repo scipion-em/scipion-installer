@@ -38,7 +38,7 @@ Advanced options
 
 .. code-block::
 
-    usage: installscipion [-h] [-conda] [-venv] [-dev] [-noXmipp] [-j J] [-dry]
+    usage: scipioninstaller [-h] [-conda] [-venv] [-dev] [-noXmipp] [-j J] [-dry]
                           [-httpsClone] [-noAsk] [-n N]
                           path
 
