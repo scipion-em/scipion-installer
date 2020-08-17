@@ -318,8 +318,10 @@ def main():
     except InstallationError as e:
         print(str(e))
         print("Installation cancelled.")
+        sys.exit(-1)
     except KeyboardInterrupt as e:
         print("\nInstallation cancelled, probably by pressing \"Ctrl + c\".")
+        sys.exit(-1)
 
 
 def runCmd(cmd, dry):
