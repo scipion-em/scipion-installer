@@ -133,8 +133,10 @@ def getRepoInstallCommand(scipionHome, repoName, useHttps,
         cmd = cmdfy("git clone --branch %s %s %s" % (branch, cloneUrl,
                                                      cloneFolder))
     else:
-        cmd = ""
-        print("Print %s repository detected, skipping clone." % repoName)
+        print("%s repository detected, it will be updated." % repoName)
+        cmd = cmdfy("cd %s" % repoName)
+        cmd += cmdfy("git pull")
+        cmd += cmdfy("cd ..")
 
     if pipInstall:
         cmd += cmdfy("pip install -e %s" % repoName)
@@ -285,22 +287,9 @@ def main():
                 conda = False
 
         noAsk = args.noAsk
-
-
-         # Warn about conda fonts...
-        # if conda and askForInput("Conda installations will have a poor font and may"
-        #     " affect your user experience. Are you sure you want to continue? (%s/%s): " % (YES, NO), noAsk) !=YES:
-        #     raise InstallationError("Cancelling installation with conda.")
-
         dev = args.dev
-
-        if askForInput("This is an early version of the installer. "
-                       "So far only works for developers installing an unstable version."
-                       "Are you sure you want to continue? (%s/%s): " % (
-                                 YES, NO), noAsk) != YES:
-            raise InstallationError("User cancelled development/unstable installation.")
-
         dry = args.dry
+
         checkProgram(GIT) if dev else None
         # Check Scipion home folder and create it if apply.
         solveScipionHome(scipionHome, dry, noAsk)
@@ -308,6 +297,8 @@ def main():
 
         cmd = getEnvironmentCreationCmd(conda, scipionHome, scipionEnv, noAsk)
         cmd += getInstallationCmd(scipionHome, dev, args)
+        # Flush stdout
+        sys.stdout.flush()
         runCmd(cmd, dry)
 
         launcher = createLauncher(scipionHome, conda, dry, scipionEnv, dev)
@@ -322,7 +313,6 @@ def main():
     except KeyboardInterrupt as e:
         print("\nInstallation cancelled, probably by pressing \"Ctrl + c\".")
         sys.exit(-1)
-
 
 def runCmd(cmd, dry):
 
