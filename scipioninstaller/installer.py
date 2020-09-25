@@ -127,14 +127,14 @@ def getRepoInstallCommand(scipionHome, repoName, useHttps,
 
     # replace the repository name
     cloneUrl = cloneUrl % (organization, repoName)
-    
-    if not os.path.exists(os.path.join(scipionHome,
-                                       repoName if cloneFolder == '' else cloneFolder)):
+    folderName = repoName if cloneFolder == '' else cloneFolder
+
+    if not os.path.exists(os.path.join(scipionHome, folderName)):
         cmd = cmdfy("git clone --branch %s %s %s" % (branch, cloneUrl,
                                                      cloneFolder))
     else:
-        print("%s repository detected, it will be updated." % repoName)
-        cmd = cmdfy("cd %s" % repoName)
+        print("%s repository detected, it will be updated." % folderName)
+        cmd = cmdfy("cd %s" % folderName)
         cmd += cmdfy("git pull")
         cmd += cmdfy("cd ..")
 
