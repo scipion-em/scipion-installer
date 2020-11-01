@@ -62,11 +62,18 @@ def getCondaCmd(scipionEnv, noAsk):
 
 def getCondaInitCmd():
     shell = os.path.basename(os.environ.get("SHELL", "bash"))
-    return 'eval "$(%s shell.%s hook)"' % (checkProgram(CONDA), shell)
+    if shell in ["csh", "tcsh"]:
+        return 'set cinit="`%s shell.%s hook`" && eval "$cinit"' % (checkProgram(CONDA), shell)
+    else:
+        return 'eval "$(%s shell.%s hook)"' % (checkProgram(CONDA), shell)
 
 
 def getCondaenvActivationCmd(scipionEnv):
-    return "conda activate %s" % scipionEnv
+    shell = os.path.basename(os.environ.get("SHELL", "bash"))
+    if shell in ["csh", "tcsh"]:
+        return 'set cact="`%s shell.%s activate %s`" && eval "$cact"' % (checkProgram(CONDA), shell, scipionEnv)
+    else:
+        return "conda activate %s" % scipionEnv
 
 
 def cmdfy(cmd, sep=CMD_SEP):
