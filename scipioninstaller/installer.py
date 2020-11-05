@@ -56,7 +56,7 @@ def getCondaCmd(scipionEnv, noAsk):
 
     silentMode = "-y" if noAsk else ""
     cmd = cmdfy(getCondaInitCmd())
-    cmd += cmdfy("%s create %s -n %s python=3" % (CONDA, silentMode, scipionEnv))
+    cmd += cmdfy("%s create %s -n %s python=3.8" % (CONDA, silentMode, scipionEnv))
     cmd += cmdfy(getCondaenvActivationCmd(scipionEnv))
     return cmd
 
