@@ -12,7 +12,7 @@ VENV_ARG = '-venv'
 
 CMD_SEP = " &&\n"
 CONDA = 'conda'
-SCIPION_ENV = '.scipion3env'
+SCIPION_ENV = 'scipion3'
 GIT = 'git'
 LAUNCHER_NAME = "scipion3"
 
@@ -287,7 +287,7 @@ def main():
             # If conda is detected
             if checkProgram(CONDA, doRaise=False):
                 print("%s detected. Favouring it. If you want a virtualenv installation "
-                      "cancel installation and pass -%s ." % (CONDA, VENV_ARG))
+                      "cancel installation and pass %s ." % (CONDA, VENV_ARG))
                 conda = True
             else:
                 # Fall back to virtualenv
@@ -301,6 +301,8 @@ def main():
         # Check Scipion home folder and create it if apply.
         solveScipionHome(scipionHome, dry, noAsk)
         scipionEnv = args.n
+        if not conda:
+            scipionEnv = '.' + scipionEnv
 
         cmd = getEnvironmentCreationCmd(conda, scipionHome, scipionEnv, noAsk)
         cmd += getInstallationCmd(scipionHome, dev, args)
@@ -310,19 +312,54 @@ def main():
 
         launcher = createLauncher(scipionHome, conda, dry, scipionEnv, dev)
         if not dry:
-            print("\n\nScipion has been successfully installed!! Happy EM processing!!\n\n")
-            print("You can launch Scipion using the launcher at %s\n" % launcher )
+            header = " ☻  Scipion has been successfully installed!! Happy EM processing!! ☻ "
+            content = "You can launch Scipion using the launcher at: %s " % launcher
+            tableLength = len(content) + len(content) % 2
+            createMessageInstallation(header, [content], tableLength)
 
     except InstallationError as e:
-        print(str(e))
-        print("Installation cancelled.")
+        header = "☹ Installation cancelled ☹ "
+        content = []
+        content.append("Error: ")
+        errors = str(e).split("\n")
+        for error in errors:
+            content.append(error)
+        content.append(" ")
+        content.append("For more information about the installation errors that can appear when installing or ")
+        content.append("using Scipion go to: https://scipion-em.github.io/docs/docs/user/troubleshooting.html ")
+        tableLength = len(content[-2]) if len(content[-2]) > len(content[1]) else len(content[1])
+        tableLength = tableLength + tableLength % 2
+        createMessageInstallation(header, content, tableLength)
         sys.exit(-1)
     except KeyboardInterrupt as e:
-        print("\nInstallation cancelled, probably by pressing \"Ctrl + c\".")
+        header = "☹ Installation cancelled ☹ "
+        content = []
+        content.append("The installation has been interrupted, probably by pressing \"Ctrl + c\".")
+        createMessageInstallation(header, content, len(content[0]))
         sys.exit(-1)
 
-def runCmd(cmd, dry):
 
+def createMessageInstallation(header="", content=[], tableLen=0):
+    """
+    Create a table related with Scipion installtion
+    """
+    tableLength = tableLen + 2
+    topTable = "╭" + "╴╴" * int(tableLength / 2) + "╮"
+    botomTable = "╰" + "╴╴" * int(tableLength / 2) + "╯"
+    divRowTable = "├" + "╴╴" * int(tableLength / 2) + "┤"
+    print(topTable, flush=True)
+    numberOfSpaces = len(topTable) - len(header) - 4
+    headerContent = "│  " + header + " " * numberOfSpaces + "│"
+    print(headerContent, flush=True)
+    print(divRowTable, flush=True)
+    for line in content:
+        numberOfSpaces = len(topTable) - len(line) - 4
+        lineContend = "│  " + line + " " * numberOfSpaces + "│"
+        print(lineContend, flush=True)
+    print(botomTable, flush=True)
+
+
+def runCmd(cmd, dry):
     # remove last CMD_SEP
     if cmd.endswith(CMD_SEP):
         cmd = cmd[:-len(CMD_SEP)]
