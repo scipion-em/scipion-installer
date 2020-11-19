@@ -314,8 +314,7 @@ def main():
         if not dry:
             header = " ☻  Scipion has been successfully installed!! Happy EM processing!! ☻ "
             content = "You can launch Scipion using the launcher at: %s " % launcher
-            tableLength = len(content) + len(content) % 2
-            createMessageInstallation(header, [content], tableLength)
+            createMessageInstallation(header, [content])
 
     except InstallationError as e:
         header = "☹ Installation cancelled ☹ "
@@ -327,23 +326,21 @@ def main():
         content.append(" ")
         content.append("For more information about the installation errors that can appear when installing or ")
         content.append("using Scipion go to: https://scipion-em.github.io/docs/docs/user/troubleshooting.html ")
-        tableLength = len(content[-2]) if len(content[-2]) > len(content[1]) else len(content[1])
-        tableLength = tableLength + tableLength % 2
-        createMessageInstallation(header, content, tableLength)
+        createMessageInstallation(header, content)
         sys.exit(-1)
     except KeyboardInterrupt as e:
         header = "☹ Installation cancelled ☹ "
         content = []
         content.append("The installation has been interrupted, probably by pressing \"Ctrl + c\".")
-        createMessageInstallation(header, content, len(content[0]))
+        createMessageInstallation(header, content)
         sys.exit(-1)
 
 
-def createMessageInstallation(header="", content=[], tableLen=0):
+def createMessageInstallation(header="", content=[]):
     """
     Create a table related with Scipion installtion
     """
-    tableLength = tableLen + 2
+    tableLength = len(content[-1]) + len(content[-1]) % 2 + 2
     topTable = "╭" + "╴╴" * int(tableLength / 2) + "╮"
     botomTable = "╰" + "╴╴" * int(tableLength / 2) + "╯"
     divRowTable = "├" + "╴╴" * int(tableLength / 2) + "┤"
