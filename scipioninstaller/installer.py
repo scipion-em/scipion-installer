@@ -301,7 +301,7 @@ def main():
         # Check Scipion home folder and create it if apply.
         solveScipionHome(scipionHome, dry, noAsk)
         scipionEnv = args.n
-        if not conda:
+        if not conda and scipionEnv == SCIPION_ENV:
             scipionEnv = '.' + scipionEnv
 
         cmd = getEnvironmentCreationCmd(conda, scipionHome, scipionEnv, noAsk)
@@ -340,7 +340,9 @@ def createMessageInstallation(header="", content=[]):
     """
     Create a table related with Scipion installtion
     """
-    tableLength = len(content[-1]) + len(content[-1]) % 2 + 2
+    tableLength = max([len(c) for c in content])
+    tableLength += tableLength % 2 + 2
+
     topTable = "╭" + "╴╴" * int(tableLength / 2) + "╮"
     botomTable = "╰" + "╴╴" * int(tableLength / 2) + "╯"
     divRowTable = "├" + "╴╴" * int(tableLength / 2) + "┤"
