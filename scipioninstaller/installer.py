@@ -116,7 +116,8 @@ def solveScipionHome(scipionHome, dry, noAsk):
             if not dry:
                 os.mkdir(scipionHome)
             else:
-            print ("%s would have been created." % scipionHome)
+                print ("%s would have been created." % scipionHome)
+
         except OSError as e:
             print (e)
             raise InstallationError("Please, verify that you have "
