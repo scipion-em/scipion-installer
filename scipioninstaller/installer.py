@@ -1,4 +1,4 @@
-# !/usr/bin/env python
+# -*- coding: utf-8 -*-
 import os
 import argparse
 import sys
@@ -6,7 +6,7 @@ import sys
 from scipioninstaller import INSTALL_ENTRY
 # Virtual env programs
 from scipioninstaller.launchers import (LAUNCHER_TEMPLATE, VIRTUAL_ENV_VAR,
-                                        ACTIVATE_ENV_CMD, PYTHON_PROGRAM)
+                                        ACTIVATE_ENV_CMD, PYTHON_PROGRAM, CONDA_ACTIVATION_LINE)
 
 VENV_ARG = '-venv'
 
@@ -60,20 +60,18 @@ def getCondaCmd(scipionEnv, noAsk):
     cmd += cmdfy(getCondaenvActivationCmd(scipionEnv))
     return cmd
 
-def getCondaInitCmd():
+def getCondaInitCmd(doRaise=True):
     shell = os.path.basename(os.environ.get("SHELL", "bash"))
+    condaPath = checkProgram(CONDA, doRaise)
     if shell in ["csh", "tcsh"]:
-        return 'set cinit="`%s shell.%s hook`" && eval "$cinit"' % (checkProgram(CONDA), shell)
+        return '. "%s"' % os.path.join(os.path.dirname(condaPath), "..","etc", "profile.d","conda.sh")
     else:
-        return 'eval "$(%s shell.%s hook)"' % (checkProgram(CONDA), shell)
+        return 'eval "$(%s shell.%s hook)"' % (condaPath, shell)
 
 
 def getCondaenvActivationCmd(scipionEnv):
-    shell = os.path.basename(os.environ.get("SHELL", "bash"))
-    if shell in ["csh", "tcsh"]:
-        return 'set cact="`%s shell.%s activate %s`" && eval "$cact"' % (checkProgram(CONDA), shell, scipionEnv)
-    else:
-        return "conda activate %s" % scipionEnv
+
+    return "conda activate %s" % scipionEnv
 
 
 def cmdfy(cmd, sep=CMD_SEP):
@@ -118,7 +116,7 @@ def solveScipionHome(scipionHome, dry, noAsk):
             if not dry:
                 os.mkdir(scipionHome)
             else:
-                print ("%s would have been created." % scipionHome)
+            print ("%s would have been created." % scipionHome)
         except OSError as e:
             print (e)
             raise InstallationError("Please, verify that you have "
@@ -198,14 +196,23 @@ def createLauncher(scipionHome, conda, dry, scipionEnv, devel=False):
         content = LAUNCHER_TEMPLATE
 
     pythonProgram = os.path.basename(sys.executable)
+
+    condaInit = getCondaInitCmd(doRaise=False)
+
     if conda:
         replaceDict = {VIRTUAL_ENV_VAR: "CONDA_DEFAULT_ENV",
-                       ACTIVATE_ENV_CMD: getCondaInitCmd() + " && " + getCondaenvActivationCmd(scipionEnv),
+                       ACTIVATE_ENV_CMD: condaInit + " && " + getCondaenvActivationCmd(scipionEnv),
                        PYTHON_PROGRAM: str(pythonProgram)}
     else:
         replaceDict = {VIRTUAL_ENV_VAR: "VIRTUAL_ENV",
                        ACTIVATE_ENV_CMD: getVirtualenvActivationCmd(scipionHome, scipionEnv),
                        PYTHON_PROGRAM: str(pythonProgram)}
+
+    # Add CONDA_ACTIVATION_CMD variable if possible
+    if condaInit:
+        replaceDict[CONDA_ACTIVATION_LINE] = "os.environ['CONDA_ACTIVATION_CMD'] = '%s'" % condaInit
+    else:
+        replaceDict[CONDA_ACTIVATION_LINE] = ""
 
     # Replace values
     content = content % replaceDict
@@ -312,14 +319,13 @@ def main():
 
         launcher = createLauncher(scipionHome, conda, dry, scipionEnv, dev)
         if not dry:
-            header = " ☻  Scipion has been successfully installed!! Happy EM processing!! ☻ "
+            header = "Scipion has been successfully installed!! Happy EM processing!!"
             content = "You can launch Scipion using the launcher at: %s " % launcher
             createMessageInstallation(header, [content])
 
     except InstallationError as e:
-        header = "☹ Installation cancelled ☹ "
+        header = "Installation failed"
         content = []
-        content.append("Error: ")
         errors = str(e).split("\n")
         for error in errors:
             content.append(error)
@@ -329,7 +335,7 @@ def main():
         createMessageInstallation(header, content)
         sys.exit(-1)
     except KeyboardInterrupt as e:
-        header = "☹ Installation cancelled ☹ "
+        header = "Installation cancelled"
         content = []
         content.append("The installation has been interrupted, probably by pressing \"Ctrl + c\".")
         createMessageInstallation(header, content)
@@ -338,24 +344,29 @@ def main():
 
 def createMessageInstallation(header="", content=[]):
     """
-    Create a table related with Scipion installtion
+    Create a table related with Scipion installation
     """
-    tableLength = max([len(c) for c in content])
-    tableLength += tableLength % 2 + 2
+    requiredWidth = max([len(c) for c in content])
 
-    topTable = "╭" + "╴╴" * int(tableLength / 2) + "╮"
-    botomTable = "╰" + "╴╴" * int(tableLength / 2) + "╯"
-    divRowTable = "├" + "╴╴" * int(tableLength / 2) + "┤"
-    print(topTable, flush=True)
-    numberOfSpaces = len(topTable) - len(header) - 4
-    headerContent = "│  " + header + " " * numberOfSpaces + "│"
-    print(headerContent, flush=True)
-    print(divRowTable, flush=True)
+    horizontalLine = "_" * requiredWidth
+
+    topTable = " _" + horizontalLine + " "
+    emptyLine = "| " + " " * requiredWidth + "|"
+    botomTable = " _" + horizontalLine + " "
+    divRowTable = botomTable
+    print("")
+    print(topTable)
+    print(emptyLine)
+    numberOfSpaces = requiredWidth - len(header)
+    headerContent = "| " + header + " " * numberOfSpaces  + "|"
+    print(headerContent)
+    print(divRowTable)
+    print("")
     for line in content:
-        numberOfSpaces = len(topTable) - len(line) - 4
-        lineContend = "│  " + line + " " * numberOfSpaces + "│"
-        print(lineContend, flush=True)
-    print(botomTable, flush=True)
+        numberOfSpaces = requiredWidth - len(line)
+        lineContend = "  " + line
+        print(lineContend)
+    print(botomTable)
 
 
 def runCmd(cmd, dry):
@@ -368,7 +379,7 @@ def runCmd(cmd, dry):
     else:
         val = os.system(cmd)
         if val != 0:
-            raise InstallationError("Something went wrong running: \n %s" % cmd)
+            raise InstallationError("Something went wrong (SEE ERRORS ABOVE) when running: \n\n %s" % cmd)
 
 
 if __name__ == '__main__':
