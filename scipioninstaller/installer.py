@@ -60,11 +60,15 @@ def getCondaCmd(scipionEnv, noAsk):
     cmd += cmdfy(getCondaenvActivationCmd(scipionEnv))
     return cmd
 
+
 def getCondaInitCmd(doRaise=True):
     shell = os.path.basename(os.environ.get("SHELL", "bash"))
     condaPath = checkProgram(CONDA, doRaise)
+    if not condaPath:
+        return ""
     if shell in ["csh", "tcsh"]:
-        return '. "%s"' % os.path.join(os.path.dirname(condaPath), "..","etc", "profile.d","conda.sh")
+        return '. "%s"' % os.path.join(os.path.dirname(condaPath), "..", "etc",
+                                       "profile.d", "conda.sh")
     else:
         return 'eval "$(%s shell.%s hook)"' % (condaPath, shell)
 
