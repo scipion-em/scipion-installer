@@ -12,6 +12,7 @@ VENV_ARG = '-venv'
 
 CMD_SEP = " &&\n"
 CONDA = 'conda'
+CONDA_ACTIVATION_CMD = "CONDA_ACTIVATION_CMD"
 SCIPION_ENV = 'scipion3'
 GIT = 'git'
 LAUNCHER_NAME = "scipion3"
@@ -62,11 +63,21 @@ def getCondaCmd(scipionEnv, noAsk):
 
 
 def getCondaInitCmd(doRaise=True):
+
+    conda_init = os.environ.get(CONDA_ACTIVATION_CMD, None)
+
+    if conda_init is None:
+        return guessCondaInitCmd(doRaise)
+    else:
+        return conda_init
+
+def guessCondaInitCmd(doRaise=True):
+
     shell = os.path.basename(os.environ.get("SHELL", "bash"))
     condaPath = checkProgram(CONDA, doRaise)
     if not condaPath:
         return ""
-    if shell in ["csh", "tcsh"]:
+    if shell in ["csh", "tcsh", "zsh"]:
         return '. "%s"' % os.path.join(os.path.dirname(condaPath), "..", "etc",
                                        "profile.d", "conda.sh")
     else:
@@ -112,13 +123,13 @@ def checkProgram(program, doRaise=True):
     else:
         return fullPath
 
-def solveScipionHome(scipionHome, dry, noAsk):
+def solveScipionHome(scipionHome, dry):
     # Check folder exists
     if not os.path.exists(scipionHome):
 
         try:
             if not dry:
-                os.mkdir(scipionHome)
+                os.makedirs(scipionHome)
             else:
                 print ("%s would have been created." % scipionHome)
 
@@ -241,7 +252,13 @@ def createLauncher(scipionHome, conda, dry, scipionEnv, devel=False):
 def main():
     try:
         # Arg parser configuration
-        parser = argparse.ArgumentParser(prog=INSTALL_ENTRY, epilog="Happy Scipioning!")
+        parser = argparse.ArgumentParser(prog=INSTALL_ENTRY,
+                                         description= "Installs scipion3 in a conda or virtualenv environment.\n"
+                                                      "Check all parameters bellow for a custom installation. If there are issues initializing "
+                                                      " conda you can set %s variable and it will be used instead of guessing.\n "
+                                                      "Typical values are . \"/path/to/miniconda3/etc/profile.d/conda.sh\" or "
+                                                      "eval \"$(/path/to/miniconda3/bin/conda shell.bash hook)\"" % CONDA_ACTIVATION_CMD,
+                                         epilog="Happy Scipioning!")
         parser.add_argument('path',
                             help='Location where you want scipion to be installed.')
         parser.add_argument('-conda',
@@ -311,7 +328,7 @@ def main():
 
         checkProgram(GIT) if dev else None
         # Check Scipion home folder and create it if apply.
-        solveScipionHome(scipionHome, dry, noAsk)
+        solveScipionHome(scipionHome, dry)
         scipionEnv = args.n
         if not conda and scipionEnv == SCIPION_ENV:
             scipionEnv = '.' + scipionEnv
