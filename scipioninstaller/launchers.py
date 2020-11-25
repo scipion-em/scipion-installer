@@ -1,6 +1,7 @@
 PYTHON_PROGRAM = "PYTHON_PROGRAM"
 VIRTUAL_ENV_VAR = "VIRTUAL_ENV_VAR"
 ACTIVATE_ENV_CMD = "ACTIVATE_ENV_CMD"
+CONDA_ACTIVATION_LINE = "CONDA_ACTIVATION_LINE"
 LAUNCHER_TEMPLATE='''#!/usr/bin/env %(PYTHON_PROGRAM)s 
 # Scipion launcher
 import os
@@ -12,6 +13,7 @@ scipionHome = dirname(abspath(__file__))
 os.environ["SCIPION_TESTS_CMD"] = basename(__file__) + " tests"
 os.environ["LD_LIBRARY_PATH"] = ":".join([os.environ.get("LD_LIBRARY_PATH", ""), join(scipionHome, "software", "lib")])
 os.environ["PYTHONPATH"] = ":".join([os.environ.get("PYTHONPATH", ""), join(scipionHome, "software", "bindings")])
+%(CONDA_ACTIVATION_LINE)s
 
 cmd = ""
 if len(sys.argv) > 1 and sys.argv[1] == 'git':
