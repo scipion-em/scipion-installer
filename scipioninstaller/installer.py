@@ -40,11 +40,11 @@ def askForInput(message, noAsk):
         return YES
 
 
-def getEnvironmentCreationCmd(conda, scipionHome, scipionEnv, noAsk):
+def getEnvironmentCmd(conda, scipionHome, scipionEnv, noAsk, create=True):
     if conda:
-        cmd = getCondaCmd(scipionEnv, noAsk)
+        cmd = getCondaCmd(scipionEnv, noAsk, create)
     else:
-        cmd = getVirtualenvCmd(scipionHome, scipionEnv)
+        cmd = getVirtualenvCmd(scipionHome, scipionEnv, create)
 
     return cmd
 
@@ -53,11 +53,12 @@ class InstallationError(Exception):
     pass
 
 
-def getCondaCmd(scipionEnv, noAsk):
+def getCondaCmd(scipionEnv, noAsk, create):
 
-    silentMode = "-y" if noAsk else ""
     cmd = cmdfy(getCondaInitCmd())
-    cmd += cmdfy("%s create %s -n %s python=3.8" % (CONDA, silentMode, scipionEnv))
+    if create:
+        silentMode = "-y" if noAsk else ""
+        cmd += cmdfy("%s create %s -n %s python=3.8" % (CONDA, silentMode, scipionEnv))
     cmd += cmdfy(getCondaenvActivationCmd(scipionEnv))
     return cmd
 
@@ -94,11 +95,12 @@ def cmdfy(cmd, sep=CMD_SEP):
     return cmd + sep
 
 
-def getVirtualenvCmd(scipionHome, scipionEnv):
+def getVirtualenvCmd(scipionHome, scipionEnv, create):
 
     cmd = cmdfy("cd %s" % scipionHome)
-    cmd += cmdfy("%s -m virtualenv --python=python3 %s" % (sys.executable,
-                                                           scipionEnv))
+    if create:
+        cmd += cmdfy("%s -m virtualenv --python=python3 %s" % (sys.executable,
+                                                               scipionEnv))
     cmd += cmdfy(getVirtualenvActivationCmd(scipionHome, scipionEnv))
     return cmd
 
@@ -123,20 +125,22 @@ def checkProgram(program, doRaise=True):
     else:
         return fullPath
 
-def solveScipionHome(scipionHome, dry):
+
+def solveFolder(folder, dry):
     # Check folder exists
-    if not os.path.exists(scipionHome):
+    if not os.path.exists(folder):
 
         try:
             if not dry:
-                os.makedirs(scipionHome)
+                os.makedirs(folder)
             else:
-                print ("%s would have been created." % scipionHome)
+                print("%s would have been created." % folder)
 
         except OSError as e:
-            print (e)
+            print(e)
             raise InstallationError("Please, verify that you have "
-                                    "permissions to create %s" % scipionHome)
+                                    "permissions to create %s" % folder)
+
 
 
 def getRepoInstallCommand(scipionHome, repoName, useHttps,
@@ -165,15 +169,12 @@ def getRepoInstallCommand(scipionHome, repoName, useHttps,
     return cmd
 
 
-def getInstallationCmd(scipionHome, dev, args):
+def getScipionInstallationCmd(scipionHome, dev, args):
 
-    cmd = cmdfy("cd %s" % scipionHome)
-    cmd += cmdfy("mkdir -p software/lib")
+    cmd = cmdfy("mkdir -p software/lib")
     cmd += cmdfy("mkdir -p software/bindings")
     cmd += cmdfy("mkdir -p software/em")
     cmd += cmdfy("export SCIPION_HOME=%s" % scipionHome)
-
-    noXmipp = args.noXmipp
 
     if dev:
         useHttps = args.httpsClone
@@ -183,23 +184,32 @@ def getInstallationCmd(scipionHome, dev, args):
         cmd += getRepoInstallCommand(scipionHome, "scipion-em", useHttps, branch=args.sciBranch)
         cmd += getRepoInstallCommand(scipionHome, "scipion-app", useHttps, branch=args.sciBranch)
 
-        if not noXmipp:
-            #Xmipp repos
-            cmd += cmdfy("echo '\033[1m\033[95m > Installing Xmipp-dev ...\033[0m'")
-            cmd += getRepoInstallCommand(scipionHome, "xmipp", useHttps,
-                                         organization='i2pc', branch=args.xmippBranch,
-                                         pipInstall=False, cloneFolder='xmipp-bundle')
-            cmd += cmdfy("xmipp-bundle/xmipp get_devel_sources %s" % args.xmippBranch)
-            cmd += cmdfy("xmipp-bundle/xmipp config %s" % ('noAsk' if args.noAsk else ''))  # This reset the xmipp.conf
-            cmd += cmdfy("pip install -e xmipp-bundle/src/scipion-em-xmipp")
-            cmd += cmdfy("python -m scipion installb xmippDev -j %s" % args.j)
-
     else:
         cmd += cmdfy("pip install scipion-pyworkflow")
         cmd += cmdfy("pip install scipion-app")
 
-        if not noXmipp:
-            cmd += cmdfy("python -m scipion installp -p scipion-em-xmipp -j %s" % args.j)
+    return cmd
+
+
+def getXmippInstallationCmd(scipionHome, dev, args):
+
+    cmd = cmdfy("export SCIPION_HOME=%s" % scipionHome)
+    if dev:
+        useHttps = args.httpsClone
+        # Xmipp repos
+        cmd += cmdfy("echo '\033[1m\033[95m > Installing Xmipp-dev ...\033[0m'")
+        cmd += getRepoInstallCommand(scipionHome, "xmipp", useHttps,
+                                     organization='i2pc',
+                                     branch=args.xmippBranch,
+                                     pipInstall=False,
+                                     cloneFolder='xmipp-bundle')
+        cmd += cmdfy("xmipp-bundle/xmipp get_devel_sources %s" % args.xmippBranch)
+        cmd += cmdfy("xmipp-bundle/xmipp config %s" % ('noAsk' if args.noAsk else ''))  # This reset the xmipp.conf
+        cmd += cmdfy("pip install -e xmipp-bundle/src/scipion-em-xmipp")
+        cmd += cmdfy("python -m scipion installb xmippDev -j %s" % args.j)
+    else:
+       cmd += cmdfy("python -m scipion installp -p scipion-em-xmipp -j %s" % args.j)
+
     return cmd
 
 
@@ -303,6 +313,13 @@ def main():
 
         parser.add_argument('-xmippBranch', help='Name of the branch of xmipp repos to clone when -dev is passed.',
                             default=XMIPP_DEFAULT_BRANCH)
+
+        parser.add_argument('-scratchPath',
+                            help='Path to a folder working at high '
+                                 'speed(like SSDs) to be used temporarily '
+                                 'during processing.',
+                            default=None)
+
         # Parse and fill args
         args = parser.parse_args()
         scipionHome = os.path.abspath(args.path)
@@ -325,23 +342,38 @@ def main():
         noAsk = args.noAsk
         dev = args.dev
         dry = args.dry
+        scratchPath = args.scratchPath
+
+        # Checking if the Scratch Folder exists
+        if scratchPath is not None:
+            solveFolder(scipionHome, dry)
 
         checkProgram(GIT) if dev else None
         # Check Scipion home folder and create it if apply.
-        solveScipionHome(scipionHome, dry)
+        solveFolder(scipionHome, dry)
         scipionEnv = args.n
         if not conda and scipionEnv == SCIPION_ENV:
             scipionEnv = '.' + scipionEnv
 
-        cmd = getEnvironmentCreationCmd(conda, scipionHome, scipionEnv, noAsk)
-        cmd += getInstallationCmd(scipionHome, dev, args)
+        cmd = getEnvironmentCmd(conda, scipionHome, scipionEnv, noAsk)
+        # Creating Scipion installation command and the launcher
+        cmd += getScipionInstallationCmd(scipionHome, dev, args)
         # Flush stdout
         sys.stdout.flush()
         runCmd(cmd, dry)
-
         launcher = createLauncher(scipionHome, conda, dry, scipionEnv, dev)
+        print("------------------------------------")
+        print("Scipion core successfully installed.")
+        print("------------------------------------")
+        # Creating Xmipp installation command
+        if not args.noXmipp:
+            cmd = getEnvironmentCmd(conda, scipionHome, scipionEnv, noAsk, create=False)
+            cmd += getXmippInstallationCmd(scipionHome, dev, args)
+            sys.stdout.flush()
+            runCmd(cmd, dry)
+
         if not dry:
-            header = "Scipion has been successfully installed!! Happy EM processing!!"
+            header = "Installation successfully finished!! Happy EM processing!!"
             content = "You can launch Scipion using the launcher at: %s " % launcher
             createMessageInstallation(header, [content])
 
