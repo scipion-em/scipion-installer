@@ -6,13 +6,14 @@ import sys
 from scipioninstaller import INSTALL_ENTRY
 # Virtual env programs
 from scipioninstaller.launchers import (LAUNCHER_TEMPLATE, VIRTUAL_ENV_VAR,
-                                        ACTIVATE_ENV_CMD, PYTHON_PROGRAM, CONDA_ACTIVATION_LINE)
+                                        ACTIVATE_ENV_CMD, PYTHON_PROGRAM)
 
 VENV_ARG = '-venv'
 
 CMD_SEP = " &&\n"
 CONDA = 'conda'
 CONDA_ACTIVATION_CMD = "CONDA_ACTIVATION_CMD"
+SCIPION_SCRATCH = 'SCIPION_SCRATCH'
 SCIPION_ENV = 'scipion3'
 GIT = 'git'
 LAUNCHER_NAME = "scipion3"
@@ -71,6 +72,7 @@ def getCondaInitCmd(doRaise=True):
         return guessCondaInitCmd(doRaise)
     else:
         return conda_init
+
 
 def guessCondaInitCmd(doRaise=True):
 
@@ -140,7 +142,6 @@ def solveFolder(folder, dry):
             print(e)
             raise InstallationError("Please, verify that you have "
                                     "permissions to create %s" % folder)
-
 
 
 def getRepoInstallCommand(scipionHome, repoName, useHttps,
@@ -234,29 +235,45 @@ def createLauncher(scipionHome, conda, dry, scipionEnv, devel=False):
                        ACTIVATE_ENV_CMD: getVirtualenvActivationCmd(scipionHome, scipionEnv),
                        PYTHON_PROGRAM: str(pythonProgram)}
 
-    # Add CONDA_ACTIVATION_CMD variable if possible
-    if condaInit:
-        replaceDict[CONDA_ACTIVATION_LINE] = "os.environ['CONDA_ACTIVATION_CMD'] = '%s'" % condaInit
-    else:
-        replaceDict[CONDA_ACTIVATION_LINE] = ""
-
     # Replace values
     content = content % replaceDict
 
     launcherFn = os.path.join(scipionHome, LAUNCHER_NAME)
+    writeFile(launcherFn, content, dry)
+    runCmd("chmod +x %s" % launcherFn, dry)
+
+    return launcherFn
+
+
+def writeFile(file, content, dry):
     if dry:
-        print("A python executable script would've been created at %s with the following content:" % launcherFn)
+        print("%s would've been created with the following content:" % file)
         print("_" * 40)
         print(content)
         print("_" * 40)
     else:
-        fh = open(launcherFn, "w")
+        fh = open(file, "w")
         fh.write(content)
         fh.close()
 
-    runCmd("chmod +x %s" % launcherFn, dry)
 
-    return launcherFn
+def createConfigFile(scipionHome, scratchPath, dry):
+    """
+    Create a minimun config file with CONDA_ACTIVATION_CMD and SCIPION_SCRATCH
+    variables
+    """
+    lines = ''
+    condaInit = getCondaInitCmd(False)
+    if condaInit:
+        lines = CONDA_ACTIVATION_CMD + ' = ' + condaInit + os.linesep
+    if scratchPath is not None:
+        lines += SCIPION_SCRATCH + ' = ' + scratchPath + os.linesep
+    if lines:
+        lines = "[PYWORKFLOW]" + os.linesep + lines
+        configPath = os.path.join(scipionHome, 'config')
+        configFileName = 'scipion.conf'
+        solveFolder(configPath, dry)
+        writeFile(os.path.join(configPath, configFileName), lines, dry)
 
 
 def main():
@@ -344,9 +361,9 @@ def main():
         dry = args.dry
         scratchPath = args.scratchPath
 
-        # Checking if the Scratch Folder exists
+        # Creating the Scratch Folder
         if scratchPath is not None:
-            solveFolder(scipionHome, dry)
+            solveFolder(scratchPath, dry)
 
         checkProgram(GIT) if dev else None
         # Check Scipion home folder and create it if apply.
@@ -371,6 +388,9 @@ def main():
             cmd += getXmippInstallationCmd(scipionHome, dev, args)
             sys.stdout.flush()
             runCmd(cmd, dry)
+
+        # Creating a minimum Scipion config file
+        createConfigFile(scipionHome, scratchPath, dry)
 
         if not dry:
             header = "Installation successfully finished!! Happy EM processing!!"
