@@ -42,10 +42,13 @@ def askForInput(message, noAsk):
 
 
 def getEnvironmentCmd(conda, scipionHome, scipionEnv, noAsk, create=True):
+
+    cmd = cmdfy("cd %s" % scipionHome)
+
     if conda:
-        cmd = getCondaCmd(scipionEnv, noAsk, create)
+        cmd += getCondaCmd(scipionEnv, noAsk, create)
     else:
-        cmd = getVirtualenvCmd(scipionHome, scipionEnv, create)
+        cmd += getVirtualenvCmd(scipionHome, scipionEnv, create)
 
     return cmd
 
@@ -98,11 +101,11 @@ def cmdfy(cmd, sep=CMD_SEP):
 
 
 def getVirtualenvCmd(scipionHome, scipionEnv, create):
-
-    cmd = cmdfy("cd %s" % scipionHome)
+    cmd = ""
     if create:
         cmd += cmdfy("%s -m virtualenv --python=python3 %s" % (sys.executable,
                                                                scipionEnv))
+
     cmd += cmdfy(getVirtualenvActivationCmd(scipionHome, scipionEnv))
     return cmd
 
