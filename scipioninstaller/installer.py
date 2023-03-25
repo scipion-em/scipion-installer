@@ -118,9 +118,9 @@ def checkProgram(program, doRaise=True):
     """Check whether `name` is on PATH.
     :param doRaise: (True) - raise an exception if not found otherwise, return empty string """
 
-    from distutils.spawn import find_executable
+    from shutil import which
 
-    fullPath = find_executable(program)
+    fullPath = which(program)
 
     if fullPath is None:
         if doRaise:
