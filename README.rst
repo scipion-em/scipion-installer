@@ -70,6 +70,12 @@ Advanced options
                    is passed.
 
 
+
+===================
+Bundle installation
+===================
+Checkout Jesper L. Karlsen's script to make a full installation --> https://github.com/jelka71/scipion_auto_install.git
+
 ===============
 Troubleshooting
 ===============
