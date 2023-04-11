@@ -118,9 +118,15 @@ def checkProgram(program, doRaise=True):
     """Check whether `name` is on PATH.
     :param doRaise: (True) - raise an exception if not found otherwise, return empty string """
 
-    from shutil import which
+    try:
+        from shutil import which
 
-    fullPath = which(program)
+        fullPath = which(program)
+
+    # Python 2 case:
+    except Exception as e:
+        from distutils.spawn import find_executable
+        fullPath = find_executable(program)
 
     if fullPath is None:
         if doRaise:
