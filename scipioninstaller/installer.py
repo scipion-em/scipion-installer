@@ -60,7 +60,7 @@ def get_conda_creation_cmd(scipion_env, no_ask, python_version):
     cmd = cmdfy(get_conda_init_cmd())
 
     silent_mode = "-y" if no_ask else ""
-    cmd += cmdfy("%s create %s -n %s python=%s" % (CONDA, silent_mode, scipion_env, python_version))
+    cmd += cmdfy("%s create %s -n %s python=%s pip" % (CONDA, silent_mode, scipion_env, python_version))
     cmd += cmdfy(get_conda_env_activation_cmd(scipion_env))
 
     return cmd
