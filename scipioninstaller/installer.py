@@ -9,7 +9,7 @@ from scipioninstaller.launchers import (LAUNCHER_TEMPLATE, VIRTUAL_ENV_VAR,
                                         ACTIVATE_ENV_CMD, PYTHON_PROGRAM)
 
 VENV_ARG = '-venv'
-DEFAULT_VALUE_PYTHON_ARG = "3.8"
+DEFAULT_VALUE_PYTHON_ARG = "3.14"
 CMD_SEP = " &&\n"
 CONDA = 'conda'
 CONDA_ACTIVATION_CMD = "CONDA_ACTIVATION_CMD"
